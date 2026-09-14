@@ -12,7 +12,7 @@ import { Collection } from "@/components/collection/Collection";
 import { About } from "@/components/about/About";
 import { ContactFooter } from "@/components/contact/ContactFooter";
 import { NavigationBar, MenuOverlay } from "@/components/navigation/Menu";
-import { useIsTouch } from "@/lib/device";
+import { useCompactExperience } from "@/lib/device";
 import { reduceMotion } from "@/lib/animations";
 import { navItems } from "@/data/site";
 import { CmsGate } from "@/components/cms/CmsGate";
@@ -25,7 +25,7 @@ export default function Home() {
   const [showIntro, setShowIntro] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [returning, setReturning] = useState(false);
-  const isTouch = useIsTouch();
+  const isTouch = useCompactExperience();
   const finishLoading = useCallback(() => setLoaded(true), []);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("from") === "arcade") {

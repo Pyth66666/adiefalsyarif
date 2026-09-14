@@ -23,3 +23,15 @@ export function useIsTouch(): boolean {
   }, []);
   return touch;
 }
+
+export function useCompactExperience(): boolean {
+  const [compact, setCompact] = useState(true);
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const update = () => setCompact(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return compact;
+}

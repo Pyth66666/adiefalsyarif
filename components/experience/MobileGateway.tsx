@@ -1,58 +1,46 @@
 "use client";
 
-import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+import { useRef, useState, type PointerEvent } from "react";
+import { useReducedMotion } from "framer-motion";
 import { usePageTransition } from "@/components/shared/PageTransition";
+import { useSceneActive } from "@/components/shared/useSceneActive";
 
-interface MobileGatewayProps {
-  onSelect: (mode: "build" | "create") => void;
-}
+const GatewayCanvas = dynamic(() => import("@/components/three/GatewayCanvas"), { ssr: false });
 
-/**
- * Mobile world selector — replaces the cursor-split on coarse pointers.
- * Vertical BUILD / CREATE chooser, kept minimal.
- */
-export function MobileGateway({ onSelect }: MobileGatewayProps) {
+export function MobileGateway({ onSelect }: { onSelect: (mode: "build" | "create") => void }) {
+  const [mode, setMode] = useState<"build" | "create">("build");
   const { runTransition } = usePageTransition();
-  const go = (m: "build" | "create") => runTransition(() => onSelect(m));
+  const { ref, active } = useSceneActive();
+  const reduced = useReducedMotion();
+  const pointer = useRef({ x: 0, y: 0 });
+  const move = (event: PointerEvent<HTMLDivElement>) => {
+    if (!event.buttons) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    pointer.current = { x: ((event.clientX - rect.left) / rect.width) * 2 - 1, y: 1 - ((event.clientY - rect.top) / rect.height) * 2 };
+  };
+  const reset = () => { pointer.current = { x: 0, y: 0 }; };
+  const fallback = <div className="touch-gateway-orb" aria-hidden="true" />;
 
   return (
-    <section
-      id="gateway"
-      className="relative flex min-h-screen w-full flex-col overflow-hidden bg-ink"
-      aria-label="Choose a world to explore"
-    >
-      <p className="pt-16 text-center text-[0.55rem] tracking-[0.35em] text-paper/50">
-        BEST EXPERIENCED ON DESKTOP
-      </p>
-      <p className="mt-2 text-center text-[0.5rem] tracking-[0.3em] text-paper/30">
-        — TAP TO CHOOSE —
-      </p>
-
-      <div className="flex flex-1 flex-col items-center justify-center gap-12">
-        <motion.button
-          onClick={() => go("build")}
-          data-cursor="enter"
-          className="font-display text-6xl text-build"
-          whileTap={{ scale: 0.97 }}
-        >
-          BUILD
-        </motion.button>
-        <span className="text-xs tracking-[0.4em] text-paper/40">
-          TWO WORLDS · ONE PERSON
-        </span>
-        <motion.button
-          onClick={() => go("create")}
-          data-cursor="enter"
-          className="font-display text-6xl text-create"
-          whileTap={{ scale: 0.97 }}
-        >
-          CREATE
-        </motion.button>
+    <section id="gateway" className="touch-gateway" data-world={mode} aria-label="Choose a world to explore">
+      <p className="touch-gateway-eyebrow">TWO WORLDS · ONE PERSON</p>
+      <div ref={ref} className="touch-gateway-scene" aria-hidden="true"
+        onPointerDown={move} onPointerMove={move} onPointerUp={reset} onPointerCancel={reset} onPointerLeave={reset}>
+        {reduced === false ? <GatewayCanvas compact mode={mode} active={active} pointer={pointer} fallback={fallback} /> : fallback}
       </div>
-
-      <div className="pointer-events-none pb-16 text-center text-[0.6rem] tracking-[0.3em] text-paper/30">
-        ← BUILD · CREATE →
+      <div className="touch-gateway-choices" role="group" aria-label="Preview a world">
+        <button type="button" aria-pressed={mode === "build"} onClick={() => setMode("build")}>BUILD</button>
+        <span aria-hidden="true">/</span>
+        <button type="button" aria-pressed={mode === "create"} onClick={() => setMode("create")}>CREATE</button>
       </div>
+      <p className="touch-gateway-description" aria-live="polite">
+        {mode === "build" ? "Systems. Experiments. Things that work." : "Images. Stories. A different way of seeing."}
+      </p>
+      <button type="button" className="touch-gateway-enter" onClick={() => runTransition(() => onSelect(mode))}>
+        ENTER {mode.toUpperCase()} <span aria-hidden="true">↗</span>
+      </button>
+      <p className="touch-gateway-hint">TAP A WORLD TO PREVIEW · SCROLL TO EXPLORE</p>
     </section>
   );
 }

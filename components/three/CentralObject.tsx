@@ -101,7 +101,7 @@ void main() {
 
 export type CentralObjectMode = Mode;
 
-export function CentralObject({ mode }: { mode: CentralObjectMode }) {
+export function CentralObject({ mode, detail = 24 }: { mode: CentralObjectMode; detail?: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const matRef = useRef<THREE.ShaderMaterial>(null);
 
@@ -133,7 +133,7 @@ export function CentralObject({ mode }: { mode: CentralObjectMode }) {
 
   return (
     <mesh ref={meshRef} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[1.6, 24]} />
+      <icosahedronGeometry args={[1.6, detail]} />
       <shaderMaterial
         ref={matRef}
         vertexShader={vertexShader}

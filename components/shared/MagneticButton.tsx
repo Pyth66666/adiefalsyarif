@@ -16,7 +16,7 @@ export function MagneticButton({ children, strength = 0.4, style, ...props }: Ma
   const ref = useRef<HTMLButtonElement>(null);
 
   const onMove = (e: MouseEvent<HTMLButtonElement>) => {
-    if (reduceMotion() || !ref.current) return;
+    if (reduceMotion() || !window.matchMedia("(hover: hover) and (pointer: fine)").matches || !ref.current) return;
     const el = ref.current;
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left - rect.width / 2) * strength;

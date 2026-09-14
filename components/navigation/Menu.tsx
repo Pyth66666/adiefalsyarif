@@ -6,7 +6,7 @@ import { DialogSurface } from "@/components/shared/DialogSurface";
 
 export function NavigationBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
-    <header className="fixed left-0 right-0 top-0 z-[900] flex items-center justify-between px-6 py-5 mix-blend-difference md:px-10">
+    <header className="mobile-safe-nav fixed left-0 right-0 top-0 z-[900] flex items-center justify-between px-6 py-5 mix-blend-difference md:px-10">
       <a
         href="#top"
         data-cursor="view"
@@ -48,7 +48,7 @@ export function MenuOverlay({
           exit={{ clipPath: "inset(0 0 100% 0)" }}
           transition={{ duration: 0.6, ease: overlayEase }}
         >
-          <div className="flex items-center justify-between px-6 py-5 md:px-10">
+          <div className="mobile-menu-header flex items-center justify-between px-6 py-5 md:px-10">
             <span className="font-display text-sm tracking-[0.25em] text-paper">ADIEF</span>
             <button
               onClick={onClose}
@@ -58,7 +58,7 @@ export function MenuOverlay({
               CLOSE
             </button>
           </div>
-          <nav className="flex flex-1 flex-col justify-center px-6 md:px-10">
+          <nav className="mobile-menu-scroll flex flex-1 flex-col justify-center px-6 md:px-10">
             {children}
           </nav>
         </motion.div>

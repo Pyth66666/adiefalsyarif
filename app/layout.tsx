@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { CustomCursor } from "@/components/navigation/CustomCursor";
@@ -16,6 +16,8 @@ const grotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
 });
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export const metadata: Metadata = {
   title: `${site.name} ${site.family} — ${site.descriptors}`,

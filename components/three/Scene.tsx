@@ -12,9 +12,10 @@ interface SceneProps {
   mode: Mode;
   pointer?: RefObject<{ x: number; y: number }>;
   theme?: ExperienceTheme;
+  compact?: boolean;
 }
 
-function SceneContent({ mode, pointer }: SceneProps) {
+function SceneContent({ mode, pointer, compact }: SceneProps) {
   const group = useRef<THREE.Group>(null);
 
   useFrame((state) => {
@@ -30,13 +31,13 @@ function SceneContent({ mode, pointer }: SceneProps) {
       <pointLight position={[4, 3, 5]} intensity={20} color={"#3ddc84"} />
       <pointLight position={[-4, -2, 3]} intensity={14} color={"#e8a33d"} />
       <group ref={group}>
-        <CentralObject mode={mode} />
+        <CentralObject mode={mode} detail={compact ? 12 : 24} />
       </group>
-      <ParticleField mode={mode} />
+      <ParticleField mode={mode} count={compact ? 240 : 700} />
     </>
   );
 }
 
-export function Scene({ mode, pointer, theme }: SceneProps) {
-  return <SceneContent mode={mode} pointer={pointer} theme={theme} />;
+export function Scene(props: SceneProps) {
+  return <SceneContent {...props} />;
 }

@@ -57,7 +57,7 @@ export function Intro({ onEnter }: IntroProps) {
     >
       {theme === "mars" ? <MarsScene/> : <StarfieldBackground pointer={pointer} />}
       <h1
-        className="relative z-10 font-display text-center text-[14vw] font-light leading-[0.95] text-paper md:text-[9vw]"
+        className="relative z-10 font-display text-center text-[12vw] font-light leading-[0.95] text-paper md:text-[9vw]"
         style={{ letterSpacing: `${theme === "mars" ? .18 : tracking}em`, transition: "letter-spacing 0.4s ease" }}
       >
         ADIEF
@@ -83,7 +83,7 @@ export function Intro({ onEnter }: IntroProps) {
         <MagneticButton
           onClick={onEnter}
           data-cursor="enter"
-          className="rounded-full border border-paper/40 bg-ink/25 px-10 py-3 font-display text-xs tracking-[0.3em] text-paper transition-colors hover:border-paper hover:bg-paper/10"
+          className="min-h-11 rounded-full border border-paper/40 bg-ink/25 px-10 py-3 font-display text-xs tracking-[0.3em] text-paper transition-colors hover:border-paper hover:bg-paper/10"
         >
           ENTER
         </MagneticButton>

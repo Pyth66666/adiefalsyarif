@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { NebulaJourney } from "./NebulaJourney";
+import { PlanetJourney } from "./PlanetJourney";
 import { useExperienceTheme } from "./ThemeProvider";
 import { MarsScene } from "./MarsScene";
 
@@ -58,6 +58,6 @@ export function AmbientSpace({ journey = false }: { journey?: boolean }) {
     document.addEventListener("visibilitychange", resume); reduced.addEventListener("change", resume);
     return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("scroll",onScroll);document.removeEventListener("visibilitychange", resume); reduced.removeEventListener("change", resume); };
   }, [theme]);
-  if(theme === "mars") return <div className="ambient-space ambient-mars" aria-hidden="true"><MarsScene subtle/>{journey && <NebulaJourney/>}<div className="ambient-vignette"/></div>;
-  return <div className="ambient-space" aria-hidden="true"><div className="ambient-nebula" /><canvas ref={canvasRef} />{journey && <NebulaJourney />}<div className="ambient-vignette" /></div>;
+  if(theme === "mars") return <div className="ambient-space ambient-mars" aria-hidden="true"><MarsScene subtle/>{journey && <PlanetJourney/>}<div className="ambient-vignette"/></div>;
+  return <div className="ambient-space" aria-hidden="true"><div className="ambient-nebula" /><canvas ref={canvasRef} />{journey && <PlanetJourney />}<div className="ambient-vignette" /></div>;
 }

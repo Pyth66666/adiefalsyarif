@@ -7,17 +7,17 @@ import type { Mode } from "@/lib/modes";
 
 interface ParticleFieldProps {
   mode: Mode;
+  count?: number;
 }
 
 /**
  * Ambient point cloud. In BUILD mode particles tighten into a cool grid-ish
  * field; in CREATE mode they drift warmly like dust/bokeh. Cheap, one draw call.
  */
-export function ParticleField({ mode }: ParticleFieldProps) {
+export function ParticleField({ mode, count = 700 }: ParticleFieldProps) {
   const pointsRef = useRef<THREE.Points>(null);
 
   const { positions, base } = useMemo(() => {
-    const count = 700;
     const base = new Float32Array(count * 3);
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -30,7 +30,7 @@ export function ParticleField({ mode }: ParticleFieldProps) {
       positions.set(new Float32Array([base[i * 3], base[i * 3 + 1], base[i * 3 + 2]]), i * 3);
     }
     return { positions, base };
-  }, []);
+  }, [count]);
 
   const targetColor = mode === "build" ? "#3ddc84" : mode === "create" ? "#e8a33d" : "#9aa0ab";
 

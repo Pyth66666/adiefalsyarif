@@ -360,3 +360,25 @@ html.lenis body {
 @media(max-width:380px) { .handheld { padding:16px 14px 35px; }.lcd-bezel { padding:12px; }.dpad { transform:scale(.88); transform-origin:left; }.action-buttons { gap:10px; }.action-buttons button { width:42px; height:42px; }.theme-options { gap:4px; }.theme-options button { padding:8px; font-size:10px; } }
 @media(max-height:600px) { .intro-with-themes { overflow-y:auto; justify-content:flex-start; padding-top:88px; padding-bottom:24px; } }
 @media(prefers-reduced-motion:reduce) { .mini-console,.mini-console:hover { transform:none; }.arcade-launch span { transition:none; } }
+/* Touch gateway keeps the original shader with a smaller mobile render budget. */
+.touch-gateway { --world-color: #3ddc84; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100svh; padding: max(100px, calc(env(safe-area-inset-top) + 80px)) 20px max(32px, env(safe-area-inset-bottom)); overflow: hidden; background: #08090b; }
+.touch-gateway[data-world="create"] { --world-color: #e8a33d; }
+.touch-gateway-eyebrow, .touch-gateway-hint { font-size: 10px; letter-spacing: .18em; text-align: center; color: #a5a6ab; }
+.touch-gateway-scene { position: relative; width: min(100%, 460px); height: clamp(220px, 40svh, 380px); touch-action: pan-y; }
+.touch-gateway-orb { position: absolute; width: 180px; height: 180px; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1px solid var(--world-color); background: radial-gradient(circle at 35% 25%, #ffffff80, transparent 25%), radial-gradient(circle at 65% 65%, #090a0e 20%, var(--world-color) 100%); box-shadow: 0 0 40px color-mix(in srgb, var(--world-color) 20%, transparent); }
+.touch-gateway-choices { display: flex; align-items: center; gap: clamp(12px, 4vw, 28px); }
+.touch-gateway-choices button { min-height: 56px; font-family: var(--font-display); font-size: clamp(28px, 8vw, 46px); color: #84868c; border-bottom: 1px solid transparent; transition: color .3s, border-color .3s; }
+.touch-gateway-choices button[aria-pressed="true"] { color: var(--world-color); border-bottom-color: currentColor; }
+.touch-gateway-choices > span { color: #51535a; }
+.touch-gateway-description { min-height: 44px; max-width: 32ch; margin: 16px 0; color: #bbbcc2; text-align: center; font-size: 13px; }
+.touch-gateway-enter { min-height: 48px; padding: 12px 26px; border: 1px solid var(--world-color); border-radius: 999px; color: var(--world-color); font-size: 12px; letter-spacing: .15em; }
+.touch-gateway-enter span { margin-left: 16px; }
+.touch-gateway-hint { margin-top: 28px; font-size: 9px; line-height: 1.8; }
+.touch-gateway button:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+@media (max-width: 767px), (pointer: coarse) {
+  .mobile-safe-nav { padding-top: max(12px, env(safe-area-inset-top)); padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
+  .mobile-safe-nav a, .mobile-safe-nav button, .mobile-menu-header button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .mobile-menu-header { padding-top: max(12px, env(safe-area-inset-top)); flex-shrink: 0; }
+  .mobile-menu-scroll { justify-content: flex-start; min-height: 0; overflow-y: auto; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  .intro-theme-picker .atmosphere-trigger { min-height: 44px; }
+}
