@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePageTransition } from "@/components/shared/PageTransition";
-import { Scene } from "@/components/three/Scene";
+import { useSceneActive } from "@/components/shared/useSceneActive";
+const GatewayCanvas = dynamic(() => import("@/components/three/GatewayCanvas"), { ssr: false });
 import { isWebGLSupported } from "@/lib/webgl";
 import { reduceMotion } from "@/lib/animations";
 import type { Mode } from "@/lib/modes";
@@ -26,6 +27,8 @@ export function Gateway({ onSelect }: GatewayProps) {
   const [mode, setMode] = useState<Mode>("neutral");
   const { runTransition } = usePageTransition();
   const gridRef = useRef<HTMLDivElement>(null);
+  const pointer = useRef({ x: 0, y: 0 });
+  const { ref: sceneRef, active } = useSceneActive();
 
   useEffect(() => {
     setWebgl(isWebGLSupported());
@@ -45,26 +48,30 @@ export function Gateway({ onSelect }: GatewayProps) {
   return (
     <section
       id="gateway"
+      data-world={mode}
       className="relative flex h-screen w-full overflow-hidden bg-ink"
       aria-label="Choose a world to explore"
+      onPointerMove={e => {
+        if (reduceMotion()) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        pointer.current = { x: (e.clientX - rect.left) / rect.width * 2 - 1, y: 1 - (e.clientY - rect.top) / rect.height * 2 };
+      }}
+      onPointerLeave={() => { pointer.current = { x: 0, y: 0 }; }}
     >
       {/* Background canvas */}
-      <div className="absolute inset-0 z-0">
-        {webgl ? (
-          <Canvas
-            camera={{ position: [0, 0, 6], fov: 45 }}
-            dpr={[1, 1.5]}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-          >
-            <Scene mode={mode} />
-          </Canvas>
+      <div ref={sceneRef} className="absolute inset-0 z-0">
+        {webgl && !reduceMotion() ? (
+          <GatewayCanvas mode={mode} active={active} pointer={pointer} />
         ) : (
           <FallbackObject mode={mode} />
         )}
       </div>
 
+
       {/* BUILD panel */}
       <button
+        onFocus={() => setHover("build")}
+        onBlur={() => setHover(null)}
         onMouseEnter={() => setHover("build")}
         onMouseLeave={() => setHover(null)}
         onClick={() => go("build")}
@@ -97,6 +104,8 @@ export function Gateway({ onSelect }: GatewayProps) {
 
       {/* CREATE panel */}
       <button
+        onFocus={() => setHover("create")}
+        onBlur={() => setHover(null)}
         onMouseEnter={() => setHover("create")}
         onMouseLeave={() => setHover(null)}
         onClick={() => go("create")}
@@ -154,7 +163,7 @@ function FallbackObject({ mode }: { mode: Mode }) {
           border: `1px solid ${color}44`,
           boxShadow: `0 0 80px ${color}22`,
         }}
-        animate={{ rotate: 360 }}
+        animate={{ rotate: reduceMotion() ? 0 : 360 }}
         transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
       />
     </div>

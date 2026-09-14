@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import type { ReactNode } from "react";
+import { DialogSurface } from "@/components/shared/DialogSurface";
 
 export function NavigationBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
@@ -38,6 +39,7 @@ export function MenuOverlay({
   return (
     <AnimatePresence>
       {open && (
+        <DialogSurface label="Navigation" onClose={onClose} className="classic-menu-dialog">
         <motion.div
           key="menu"
           className="fixed inset-0 z-[950] flex flex-col bg-ink"
@@ -60,6 +62,7 @@ export function MenuOverlay({
             {children}
           </nav>
         </motion.div>
+        </DialogSurface>
       )}
     </AnimatePresence>
   );

@@ -5,6 +5,7 @@ import { CustomCursor } from "@/components/navigation/CustomCursor";
 import { LenisProvider } from "@/components/shared/LenisProvider";
 import { PageTransitionProvider } from "@/components/shared/PageTransition";
 import { site } from "@/data/site";
+import { ThemeProvider } from "@/components/experience/ThemeProvider";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -33,10 +34,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable} ${grotesk.variable}`}>
       <body className="bg-ink font-sans text-paper">
-        <LenisProvider>
+        <ThemeProvider><LenisProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>
           <CustomCursor />
-        </LenisProvider>
+        </LenisProvider></ThemeProvider>
       </body>
     </html>
   );

@@ -35,7 +35,7 @@ export function ContactFooter() {
           className="mt-14 flex flex-col gap-10 border-t border-white/10 py-14 md:flex-row md:justify-between"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, margin: "-8% 0px -8% 0px" }}
           transition={{ duration: 0.6 }}
         >
           <div>

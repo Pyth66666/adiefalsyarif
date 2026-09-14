@@ -1,184 +1,76 @@
 "use client";
-
-import { useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { useRef, useState, type PointerEvent } from "react";
+import { motion, useMotionValue, useSpring, useReducedMotion } from "framer-motion";
 import type { CollectionBadge } from "@/data/collection";
-import { GlassPanel } from "@/components/shared/GlassPanel";
+import { DialogSurface } from "@/components/shared/DialogSurface";
 import { TextReveal } from "@/components/shared/TextReveal";
 import { useCms } from "@/components/cms/CmsGate";
 
-/**
- * A physical-feeling badge with an interactive 3D tilt/flip.
- * Falls back to stylized front/back faces when no images are configured.
- */
 function Badge3D({ badge, onOpen }: { badge: CollectionBadge; onOpen: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  const hasImage = badge.frontImage.length > 0;
-
-  const onMove = (e: React.MouseEvent) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width - 0.5;
-    const py = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: -py * 18, y: px * 24 });
+  const rotation = useMotionValue(0);
+  const tilt = useMotionValue(0);
+  const smoothRotation = useSpring(rotation, { stiffness: 150, damping: 23 });
+  const smoothTilt = useSpring(tilt, { stiffness: 180, damping: 25 });
+  const reduced = useReducedMotion();
+  const [back, setBack] = useState(false);
+  const drag = useRef<{ x: number; y: number; angle: number; pointer: number } | null>(null);
+  const flip = () => { const next = !back; setBack(next); rotation.set(next ? 180 : 0); tilt.set(0); };
+  const end = (e: PointerEvent<HTMLDivElement>) => {
+    if (!drag.current || drag.current.pointer !== e.pointerId) return;
+    const angle = rotation.get();
+    const target = Math.round(angle / 180) * 180;
+    rotation.set(target); setBack(Math.abs(Math.round(target / 180)) % 2 === 1); tilt.set(0); drag.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   };
-
-  return (
-    <div style={{ perspective: "800px" }}>
-      <motion.div
-        ref={ref}
-        onMouseMove={onMove}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-        onClick={onOpen}
-        data-cursor="drag"
-        className="relative block h-48 w-40 cursor-grab select-none md:h-56 md:w-44"
-        animate={{ rotateX: tilt.x, rotateY: tilt.y }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        style={{ transformStyle: "preserve-3d" }}
-        aria-label={`${badge.title} — inspect`}
-      >
-        {/* Front face */}
-        <div
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-lg border border-white/15 bg-graphite/70 p-3 text-center shadow-2xl"
-          style={{ backfaceVisibility: "hidden" }}
-        >
-          {hasImage ? (
-            <img src={badge.frontImage} alt={badge.title} className="h-full w-full rounded object-cover" />
-          ) : (
-            <>
-              <span className="font-display text-[0.6rem] tracking-[0.3em] text-create">
-                {badge.year}
-              </span>
-              <span className="mt-2 font-display text-sm leading-tight text-paper">
-                {badge.title}
-              </span>
-              <span className="mt-1 text-[0.5rem] tracking-[0.2em] text-paper/50">
-                {badge.event}
-              </span>
-            </>
-          )}
-          <span className="absolute bottom-2 text-[0.45rem] tracking-[0.25em] text-paper/40">
-            {badge.backImage ? "DRAG TO FLIP" : "DRAG · CLICK TO OPEN"}
-          </span>
-        </div>
-
-        {/* Back face (only if back image available) */}
-        {badge.backImage && (
-          <div
-            className="absolute inset-0 rounded-lg border border-white/15 bg-graphite/90 shadow-2xl"
-            style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-          >
-            <img src={badge.backImage} alt={`${badge.title} back`} className="h-full w-full rounded object-cover" />
-          </div>
-        )}
-      </motion.div>
-    </div>
-  );
-}
-
-function BadgeStory({ badge, onClose }: { badge: CollectionBadge; onClose: () => void }) {
-  const sections = [
-    ["WHAT HAPPENED", badge.whatHappened],
-    ["WHAT I BUILT", badge.whatIBuilt],
-    ["PEOPLE I MET", badge.peopleIMet],
-  ] as const;
-  return (
-    <motion.div
-      className="fixed inset-0 z-[980] flex items-center justify-center bg-ink/90 p-4 backdrop-blur-md"
-      data-lenis-prevent
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={badge.title}
-    >
-      <motion.div
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto"
-        initial={{ scale: 0.92, y: 24, opacity: 0 }}
-        animate={{ scale: 1, y: 0, opacity: 1 }}
-        exit={{ scale: 0.96, y: 16, opacity: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <GlassPanel className="p-8 md:p-10">
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 text-[0.6rem] tracking-[0.3em] text-paper/60 hover:text-paper"
-            aria-label="Close"
-          >
-            CLOSE
-          </button>
-          <p className="font-display text-xs tracking-[0.4em] text-create">{badge.year}</p>
-          <h3 className="mt-2 font-display text-2xl md:text-4xl">{badge.title}</h3>
-          <p className="mt-1 text-sm text-paper/60">{badge.event}</p>
-
-          <p className="mt-6 text-sm italic text-paper/70">{badge.story}</p>
-
-          <div className="mt-8 space-y-6">
-            {sections.map(([label, content]) => (
-              <div key={label}>
-                <h4 className="mb-1 text-[0.6rem] tracking-[0.35em] text-paper/50">{label}</h4>
-                <p className="text-sm text-paper/80">{content}</p>
-              </div>
-            ))}
-          </div>
-
-          {badge.photos.length > 0 && (
-            <div className="mt-8">
-              <h4 className="mb-3 text-[0.6rem] tracking-[0.35em] text-paper/50">PHOTOS</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {badge.photos.map((src, i) => (
-                  <img key={i} src={src} alt={`${badge.title} ${i + 1}`} className="h-28 w-full rounded object-cover" />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {badge.project && (
-            <p className="mt-8 text-xs tracking-[0.2em] text-paper/50">
-              PROJECT: <span className="text-paper/80">{badge.project}</span>
-            </p>
-          )}
-        </GlassPanel>
-      </motion.div>
+  return <div className="badge-stage">
+    <motion.div className="badge-card" role="group" aria-label={badge.title + (back ? ", back" : ", front")}
+      style={{ rotateY: reduced ? rotation : smoothRotation, rotateX: reduced ? 0 : smoothTilt }}
+      onPointerDown={e => {
+        if (e.button !== 0 || reduced) return;
+        drag.current = {x:e.clientX,y:e.clientY,angle:rotation.get(),pointer:e.pointerId};
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={e => {
+        if (reduced) return;
+        const d=drag.current;
+        if (d && d.pointer === e.pointerId) { rotation.set(d.angle + (e.clientX-d.x)*1.3); tilt.set(Math.max(-15,Math.min(15,(d.y-e.clientY)*.12))); }
+        else if (e.pointerType === "mouse") { const r=e.currentTarget.getBoundingClientRect(); tilt.set((.5-(e.clientY-r.top)/r.height)*12); }
+      }}
+      onPointerUp={end} onPointerCancel={end} onLostPointerCapture={() => { drag.current=null; }}
+      onPointerLeave={() => { if (!drag.current) tilt.set(0); }}>
+      <div className="badge-face" aria-hidden={back}>
+        {badge.frontImage ? <img src={badge.frontImage} alt={badge.title} draggable={false} loading="lazy" />
+          : <><p className="eyebrow text-create">{badge.year}</p><p className="font-display text-2xl mt-4">{badge.title}</p><p className="mt-3 text-sm text-paper/60">{badge.event}</p></>}
+      </div>
+      <div className="badge-face badge-back" aria-hidden={!back}>
+        {badge.backImage ? <img src={badge.backImage} alt={badge.title + " back"} draggable={false} loading="lazy" />
+          : <><p className="eyebrow text-build">A MOMENT KEPT</p><p className="mt-5 text-sm leading-relaxed line-clamp-6">{badge.story || badge.event}</p><p className="mt-5 text-xs text-paper/50">{badge.year}</p></>}
+      </div>
     </motion.div>
-  );
+    <div className="badge-controls"><button onClick={flip} aria-label={`Flip ${badge.title} to ${back ? "front" : "back"}`}>FLIP ↻</button><button onClick={onOpen} aria-haspopup="dialog">READ STORY ↗</button></div>
+  </div>;
 }
-
-/**
- * THE COLLECTION — physical memorabilia (badges, lanyards, passes),
- * inspectable like objects, opened like stories.
- */
+function BadgeStory({ badge, onClose }: { badge: CollectionBadge; onClose: () => void }) {
+  return <DialogSurface label={badge.title} onClose={onClose}>
+    <article className="project-case"><button onClick={onClose} className="case-close" aria-label="Close story">CLOSE ×</button>
+      <p className="eyebrow text-create">{badge.year} / {badge.event}</p><h2 className="mt-4 font-display text-3xl md:text-5xl">{badge.title}</h2>
+      {badge.story && <p className="mt-6 text-lg leading-relaxed text-paper/80">{badge.story}</p>}
+      <div className="mt-8 space-y-7">{[["WHAT HAPPENED",badge.whatHappened],["WHAT I BUILT",badge.whatIBuilt],["PEOPLE I MET",badge.peopleIMet]].map(([label,value]) => value && <div key={label}><h3 className="eyebrow text-create mb-2">{label}</h3><p className="text-paper/75 leading-relaxed">{value}</p></div>)}</div>
+      {badge.photos.length>0 && <div className="mt-8 grid grid-cols-2 gap-4">{badge.photos.map((src,i)=><img key={src+i} src={src} alt={badge.title+" memory "+(i+1)} loading="lazy" className="w-full h-auto" />)}</div>}
+      {badge.project && <p className="mt-8 text-sm text-paper/60">RELATED PROJECT / {badge.project}</p>}
+    </article>
+  </DialogSurface>;
+}
 export function Collection() {
   const { collection } = useCms();
-  const [openId, setOpenId] = useState<string | null>(null);
-  const openBadge = collection.find((b) => b.id === openId) ?? null;
-
-  return (
-    <section
-      id="collection"
-      className="relative mx-auto w-full max-w-6xl px-6 py-24 md:px-10"
-      aria-label="The collection"
-    >
-      <TextReveal as="h2" className="font-display text-xs tracking-[0.4em] text-paper/80">
-        THE COLLECTION
-      </TextReveal>
-      <TextReveal as="h3" delay={0.05} className="mt-2 font-display text-3xl tracking-[0.1em] md:text-5xl">
-        THINGS I&apos;VE COLLECTED ALONG THE WAY
-      </TextReveal>
-
-      <div className="mt-14 flex flex-wrap gap-8 md:gap-12">
-        {collection.map((b) => (
-          <Badge3D key={b.id} badge={b} onOpen={() => setOpenId(b.id)} />
-        ))}
-      </div>
-
-      {openBadge && <BadgeStory badge={openBadge} onClose={() => setOpenId(null)} />}
-    </section>
-  );
+  const [openId,setOpenId]=useState<string|null>(null);
+  const openBadge=collection.find(b=>b.id===openId);
+  return <section id="collection" className="mx-auto max-w-7xl px-6 py-24 md:px-10" aria-label="The collection">
+    <TextReveal as="p" className="eyebrow text-create">03 / OBJECTS WITH A STORY</TextReveal>
+    <TextReveal as="h2" className="mt-4 font-display text-4xl md:text-6xl tracking-tight">Collected along the way.</TextReveal>
+    <p className="mt-5 text-paper/60 max-w-xl">Passes, badges, and the memories attached. Drag sideways to turn one over, or use the flip button.</p>
+    <div className="mt-14 grid grid-cols-1 min-[400px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">{collection.map(b=><Badge3D key={b.id} badge={b} onOpen={()=>setOpenId(b.id)} />)}</div>
+    {collection.length===0 && <p className="mt-10 text-paper/50">The collection is being put together.</p>}
+    {openBadge && <BadgeStory badge={openBadge} onClose={()=>setOpenId(null)} />}
+  </section>;
 }

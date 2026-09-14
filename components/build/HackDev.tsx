@@ -6,6 +6,7 @@ import { useCountUp } from "@/components/shared/useCountUp";
 import { TextReveal } from "@/components/shared/TextReveal";
 import { useCms } from "@/components/cms/CmsGate";
 import type { Metric } from "@/data/telemetry";
+import { useSceneActive } from "@/components/shared/useSceneActive";
 
 /**
  * Cursor-reactive particle network on canvas — HackDev's members as a
@@ -13,17 +14,18 @@ import type { Metric } from "@/data/telemetry";
  */
 function NodeNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { ref, active } = useSceneActive();
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = !active;
 
     let w = (canvas.width = canvas.offsetWidth);
     let h = (canvas.height = canvas.offsetHeight);
-    const count = 90;
+    const count = 44;
     const nodes = Array.from({ length: count }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
@@ -54,8 +56,10 @@ function NodeNetwork() {
         if (a.x < 0 || a.x > w) a.vx *= -1;
         if (a.y < 0 || a.y > h) a.vy *= -1;
         // mouse attraction
-        a.x += (mouse.x - a.x) * 0.004;
-        a.y += (mouse.y - a.y) * 0.004;
+        if (mouse.x >= 0 && mouse.y >= 0) {
+          a.x += (mouse.x - a.x) * 0.004;
+          a.y += (mouse.y - a.y) * 0.004;
+        }
         for (let j = i + 1; j < count; j++) {
           const b = nodes[j];
           const dx = b.x - a.x;
@@ -83,7 +87,7 @@ function NodeNetwork() {
 
     if (!reduced) {
       raf = requestAnimationFrame(draw);
-      window.addEventListener("pointermove", onMove, { passive: true });
+      canvas.addEventListener("pointermove", onMove, { passive: true });
       canvas.addEventListener("pointerleave", onLeave);
     } else {
       // static draw once
@@ -117,13 +121,13 @@ function NodeNetwork() {
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", onMove);
+      canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [active]);
 
-  return <canvas ref={canvasRef} className="h-full min-h-[320px] w-full" />;
+  return <div ref={ref} aria-hidden="true"><canvas ref={canvasRef} className="h-full min-h-[240px] w-full" /></div>;
 }
 
 function CommunityMetric({ m }: { m: Metric }) {

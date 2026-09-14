@@ -57,7 +57,7 @@ function EventRow({ event }: { event: EventItem }) {
       className="group relative border-l border-white/10 pl-8 md:pl-12"
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
+      viewport={{ once: false, margin: "-8% 0px -8% 0px" }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       {/* node */}

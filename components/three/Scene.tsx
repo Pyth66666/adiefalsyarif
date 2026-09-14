@@ -1,22 +1,25 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { CentralObject } from "./CentralObject";
 import { ParticleField } from "./ParticleField";
 import type { Mode } from "@/lib/modes";
+import type { ExperienceTheme } from "@/components/experience/ThemeProvider";
 
 interface SceneProps {
   mode: Mode;
+  pointer?: RefObject<{ x: number; y: number }>;
+  theme?: ExperienceTheme;
 }
 
-function SceneContent({ mode }: SceneProps) {
+function SceneContent({ mode, pointer }: SceneProps) {
   const group = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     if (!group.current) return;
-    const { x, y } = state.pointer;
+    const { x, y } = pointer?.current ?? state.pointer;
     group.current.rotation.y = x * 0.25;
     group.current.rotation.x = -y * 0.18;
   });
@@ -34,6 +37,6 @@ function SceneContent({ mode }: SceneProps) {
   );
 }
 
-export function Scene({ mode }: SceneProps) {
-  return <SceneContent mode={mode} />;
+export function Scene({ mode, pointer, theme }: SceneProps) {
+  return <SceneContent mode={mode} pointer={pointer} theme={theme} />;
 }

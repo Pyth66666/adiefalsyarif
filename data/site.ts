@@ -13,8 +13,8 @@ export const site = {
 
 export const navItems = [
   { id: "home", index: "01", label: "HOME", ref: "#top" },
-  { id: "build", index: "02", label: "BUILD", ref: "#gateway" },
-  { id: "create", index: "03", label: "CREATE", ref: "#gateway" },
+  { id: "build", index: "02", label: "BUILD", ref: "#build" },
+  { id: "create", index: "03", label: "CREATE", ref: "#create" },
   { id: "collection", index: "04", label: "COLLECTION", ref: "#collection" },
   { id: "about", index: "05", label: "ABOUT", ref: "#about" },
   { id: "contact", index: "06", label: "CONTACT", ref: "#contact" },

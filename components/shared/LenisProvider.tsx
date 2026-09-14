@@ -7,8 +7,8 @@ export function LenisProvider({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1 });
+    if (window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches) return;
+    const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1, anchors: true });
     lenisRef.current = lenis;
 
     let raf = 0;

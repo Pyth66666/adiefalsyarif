@@ -1,144 +1,59 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { TextReveal } from "@/components/shared/TextReveal";
+import { useCms } from "@/components/cms/CmsGate";
+import { ProjectModalView } from "./ProjectExplorer";
 
-interface CyberNode {
-  id: string;
-  label: string;
-  type: "ctf" | "security" | "research" | "tool";
-  detail: string;
-  x: number;
-  y: number;
-}
-
-// Placeholder nodes — replace content in data/ as needed.
-const seedNodes: Omit<CyberNode, "x" | "y">[] = [
-  { id: "n1", label: "CTF", type: "ctf", detail: "[CTF related work / competitions]" },
-  { id: "n2", label: "SECURITY", type: "security", detail: "[Security projects & findings]" },
-  { id: "n3", label: "RESEARCH", type: "research", detail: "[Research notes & writeups]" },
-  { id: "n4", label: "TOOLS", type: "tool", detail: "[Tools I build & maintain]" },
-  { id: "n5", label: "NETWORKS", type: "research", detail: "[Network analysis & recon]" },
-  { id: "n6", label: "CRYPTO", type: "ctf", detail: "[Crypto challenges & notes]" },
-  { id: "n7", label: "WEB", type: "tool", detail: "[Web security tooling]" },
+const topics = [
+  { id: "security", label: "SECURITY", terms: ["security", "cyber", "ctf", "crypto"], description: "Security projects, challenges, and the decisions behind them.", x: 140, y: 85 },
+  { id: "web", label: "WEB", terms: ["web", "react", "next", "frontend", "fullstack", "full-stack"], description: "Interfaces and systems built for the web.", x: 400, y: 85 },
+  { id: "ai", label: "AI", terms: ["ai", "machine learning", "llm"], description: "Experiments that turn models and data into useful tools.", x: 430, y: 260 },
+  { id: "engineering", label: "ENGINEERING", terms: ["engineering", "system", "network", "tool", "python", "iot"], description: "The systems, tools, and infrastructure behind the work.", x: 110, y: 260 },
 ];
 
-const typeColor: Record<CyberNode["type"], string> = {
-  ctf: "#3ddc84",
-  security: "#5aa9e6",
-  research: "#9aa0ab",
-  tool: "#b8c04a",
-};
-
-function layout(nodes: Omit<CyberNode, "x" | "y">[], w = 560, h = 420) {
-  const base = 2 * Math.PI / nodes.length;
-  return nodes.map((n, i) => {
-    const angle = base * i - Math.PI / 2;
-    const radius = Math.min(w, h) * 0.34;
-    const jitter = (Math.sin(i * 7.13) * 0.5 + 0.5) * 0.35 + 0.65;
-    return {
-      ...n,
-      x: w / 2 + Math.cos(angle) * radius * jitter,
-      y: h / 2 + Math.sin(angle) * radius * jitter,
-    };
-  });
-}
-
-/**
- * Cybersecurity experience as an explorable digital map of connected nodes.
- */
 export function CyberMap() {
-  const nodes = useMemo(() => layout(seedNodes), []);
-  const [active, setActive] = useState<string | null>(null);
-  const activeNode = nodes.find((n) => n.id === active);
+  const { projects } = useCms();
+  const [selected, setSelected] = useState("security");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const reduced = useReducedMotion();
+  const topic = topics.find(t => t.id === selected)!;
+  const related = projects.filter(p => {
+    const words = [p.title, p.category, ...p.technologies].join(" ").toLowerCase().split(/[^a-z0-9-]+/);
+    return topic.terms.some(term => term.includes(" ") ? words.join(" ").includes(term) : words.includes(term));
+  });
+  const opened = projects.find(p => p.id === openId);
 
-  return (
-    <section
-      id="cybermap"
-      className="relative mx-auto w-full max-w-6xl px-6 py-24 md:px-10"
-      aria-label="Cybersecurity map"
-    >
-      <TextReveal as="h2" className="mb-2 font-display text-xs tracking-[0.4em] text-paper/80">
-        CYBERSECURITY EXPERIENCE
-      </TextReveal>
-      <TextReveal as="h3" delay={0.05} className="mb-8 font-display text-3xl tracking-[0.1em] md:text-5xl">
-        EXPLORE THE MAP
-      </TextReveal>
-
-      <div className="relative mx-auto max-w-3xl">
-        <svg viewBox="0 0 560 420" className="w-full" role="img" aria-label="Node network of cybersecurity areas">
-          {nodes.map((n) =>
-            nodes
-              .filter((m) => m.id !== n.id)
-              .map((m) => {
-                const isLit = active === null || active === n.id || active === m.id;
-                return (
-                  <line
-                    key={`${n.id}-${m.id}`}
-                    x1={n.x}
-                    y1={n.y}
-                    x2={m.x}
-                    y2={m.y}
-                    stroke={typeColor[n.type]}
-                    strokeOpacity={isLit ? 0.12 : 0.04}
-                    strokeWidth={1}
-                  />
-                );
-              })
-          )}
-          {nodes.map((n) => {
-            const isActive = active === n.id;
-            return (
-              <g
-                key={n.id}
-                onMouseEnter={() => setActive(n.id)}
-                onMouseLeave={() => setActive(null)}
-                onClick={() => setActive(isActive ? null : n.id)}
-                className="cursor-pointer"
-                style={{ cursor: "pointer" }}
-              >
-                <circle
-                  cx={n.x}
-                  cy={n.y}
-                  r={isActive ? 22 : 18}
-                  fill={typeColor[n.type]}
-                  fillOpacity={isActive ? 0.25 : 0.12}
-                  stroke={typeColor[n.type]}
-                  strokeWidth={isActive ? 2 : 1}
-                >
-                  <animate attributeName="r" values={isActive ? "18;22;18" : "18"} dur="2s" repeatCount="indefinite" />
-                </circle>
-                <text
-                  x={n.x}
-                  y={n.y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="fill-paper"
-                  style={{ fontSize: 9, letterSpacing: "0.15em", fontWeight: 600, textTransform: "uppercase" }}
-                >
-                  {n.label}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-
-        {/* Detail panel */}
-        {activeNode && (
-          <motion.div
-            key={activeNode.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="pointer-events-none absolute bottom-2 left-1/2 w-64 -translate-x-1/2 rounded-xl border border-white/10 bg-ink/80 p-4 text-center backdrop-blur-md"
-          >
-            <p className="font-display text-xs tracking-[0.3em]" style={{ color: typeColor[activeNode.type] }}>
-              {activeNode.label}
-            </p>
-            <p className="mt-2 text-xs text-paper/60">{activeNode.detail}</p>
-          </motion.div>
-        )}
+  return <section id="cybermap" className="mx-auto max-w-7xl px-6 py-24 md:px-10" aria-label="Explore work by discipline">
+    <TextReveal as="p" className="eyebrow text-build">02 / CONNECT THE DOTS</TextReveal>
+    <TextReveal as="h2" className="mt-4 mb-10 font-display text-4xl md:text-6xl tracking-tight">Follow a thread.</TextReveal>
+    <div className="cyber-layout">
+      <svg viewBox="0 0 540 340" className="w-full" role="group" aria-label="Connected disciplines">
+        {topics.map(t => <g key={t.id} role="button" tabIndex={0} aria-label={`Explore ${t.label}`} aria-pressed={selected === t.id}
+          onClick={() => setSelected(t.id)} className="cursor-pointer"
+          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(t.id); } }}>
+          <line x1="270" y1="170" x2={t.x} y2={t.y} stroke={selected === t.id ? "#3ddc84" : "#ffffff"} strokeOpacity={selected === t.id ? .8 : .12} />
+          <circle cx={t.x} cy={t.y} r={selected === t.id ? 31 : 25} fill={selected === t.id ? "#193b2a" : "#151b18"} stroke={selected === t.id ? "#3ddc84" : "#47564d"} />
+          <text x={t.x} y={t.y + 50} textAnchor="middle" fill={selected === t.id ? "#3ddc84" : "#b0b9b2"} fontSize="13" letterSpacing="1">{t.label}</text>
+        </g>)}
+        <circle cx="270" cy="170" r="43" fill="#15271c" stroke="#3ddc84" />
+        <text x="270" y="175" fill="#eceae6" textAnchor="middle" fontSize="14" letterSpacing="2">BUILD</text>
+      </svg>
+      <div>
+        <div className="cyber-topics" role="group" aria-label="Disciplines">
+          {topics.map(t => <button key={t.id} aria-pressed={selected === t.id} onClick={() => setSelected(t.id)}>{t.label}</button>)}
+        </div>
+        <motion.div key={selected} initial={{ opacity: 0, y: reduced ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .2 }}>
+          <h3 className="font-display text-2xl">{topic.label}</h3>
+          <p className="mt-3 text-paper/60 leading-relaxed">{topic.description}</p>
+          <p className="eyebrow mt-6 text-build">{related.length} RELATED {related.length === 1 ? "PROJECT" : "PROJECTS"}</p>
+          {related.length ? <div className="mt-4">{related.map(p => <button key={p.id} className="w-full border-t border-white/15 py-4 text-left flex justify-between gap-4" onClick={() => setOpenId(p.id)} aria-haspopup="dialog">
+            <span>{p.title}</span><span className="text-build">↗</span>
+          </button>)}</div> : <p className="mt-4 text-sm text-paper/50">No published projects in this thread yet. Explore another discipline.</p>}
+        </motion.div>
       </div>
-    </section>
-  );
+    </div>
+    {opened && <ProjectModalView project={opened} onClose={() => setOpenId(null)} />}
+  </section>;
 }

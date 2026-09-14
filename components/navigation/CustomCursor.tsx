@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { isFinePointer, isTouchDevice } from "@/lib/device";
 import { reduceMotion } from "@/lib/animations";
+import { usePathname } from "next/navigation";
 
 type CursorState = "default" | "view" | "open" | "drag" | "enter" | "text" | "hidden";
 
@@ -12,13 +13,14 @@ type CursorState = "default" | "view" | "open" | "drag" | "enter" | "text" | "hi
  * Auto-disabled on touch/coarse pointers and under reduced motion.
  */
 export function CustomCursor() {
+  const pathname = usePathname();
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [label, setLabel] = useState<CursorState>("default");
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    if (!isFinePointer() || isTouchDevice() || reduceMotion()) return;
+    if (pathname === "/play" || !isFinePointer() || isTouchDevice() || reduceMotion()) return;
     setEnabled(true);
     document.documentElement.classList.add("custom-cursor-on");
 
@@ -40,27 +42,35 @@ export function CustomCursor() {
         ? (target.getAttribute("data-cursor") as CursorState | null)
         : null;
       setLabel((state as CursorState) ?? "default");
+      if (!raf && !document.hidden) raf = requestAnimationFrame(loop);
     };
 
     const loop = () => {
+      raf = 0;
       rx += (mx - rx) * 0.18;
       ry += (my - ry) * 0.18;
       if (ringRef.current) {
         ringRef.current.style.transform = `translate(${rx - 24}px, ${ry - 24}px)`;
       }
-      raf = requestAnimationFrame(loop);
+      if (!document.hidden && (Math.abs(mx - rx) > 0.1 || Math.abs(my - ry) > 0.1)) raf = requestAnimationFrame(loop);
+    };
+    const onVisibility = () => {
+      cancelAnimationFrame(raf); raf = 0;
+      if (!document.hidden) raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("visibilitychange", onVisibility);
       document.documentElement.classList.remove("custom-cursor-on");
       setEnabled(false);
     };
-  }, []);
+  }, [pathname]);
 
   if (!enabled) return null;
 

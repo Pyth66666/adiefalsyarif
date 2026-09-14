@@ -21,6 +21,8 @@ export function useCms(): PublicContent {
  */
 export function CmsGate({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<PublicContent | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -28,16 +30,23 @@ export function CmsGate({ children }: { children: ReactNode }) {
       .then((c) => {
         if (alive) setContent(c);
       })
-      .catch(() => {});
+      .catch(() => { if (alive) setFailed(true); });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [attempt]);
+
+  useEffect(() => {
+    if (!content || !window.location.hash) return;
+    const target = document.getElementById(window.location.hash.slice(1));
+    target?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [content]);
 
   if (!content) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink">
-        <p className="font-display text-xs tracking-[0.4em] text-paper/50">LOADING…</p>
+        {failed ? <div className="text-center"><p className="text-paper/70">The portfolio could not load. Please try again.</p><button className="mt-5 border border-build/40 px-6 py-3 text-build" onClick={() => { setFailed(false); setAttempt(value => value + 1); }}>TRY AGAIN</button></div>
+          : <p role="status" className="font-display text-sm tracking-[0.2em] text-paper/60">OPENING THE ARCHIVE…</p>}
       </div>
     );
   }

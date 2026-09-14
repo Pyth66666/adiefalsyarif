@@ -62,3 +62,18 @@ gracefully.
 - Photographs use placeholder gradients until `src` values are added; `lib/exif.ts` wires
   real EXIF automatically once images exist.
 - Add `outputFileTracingRoot` intentionally pins the build root to this directory.
+
+## Interaction refinements
+
+The original boot sequence, explicit ENTER screen, full-screen split gateway,
+minimal ADIEF / MENU navigation, and BUILD and CREATE introductions remain the
+visual foundation. The sections below them use the newer interactive designs.
+
+- The gateway uses the existing Three.js stack, loaded on demand, with a lower-detail mesh and rendering paused offscreen.
+- Projects use the large screenshot preview, frame scrubbing, and full case-study galleries.
+- Photos offer GRID and ON THE DESK layouts. The viewer includes swipe navigation, optional camera details, and image expansion.
+- The discipline map links to matching published projects; LAB adds the signal-matching experiment.
+- Section entrances and text reveals replay when scrolling down or back up.
+- Collection badges support actual drag rotation, flip buttons, and story dialogs.
+- Modal dialogs handle Escape and focus restoration; gallery and map controls support keyboard navigation.
+- No additional visual libraries were installed.

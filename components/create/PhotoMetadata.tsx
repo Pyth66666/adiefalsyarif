@@ -21,7 +21,7 @@ export function PhotoMetadata({ photo }: { photo: Photo }) {
     <GlassPanel tone="create" interactive className="pointer-events-none">
       <div className="px-5 py-4">
         <p className="font-display text-sm tracking-[0.15em] text-paper">{photo.title}</p>
-        <p className="mt-1 text-[0.6rem] tracking-[0.3em] text-paper/60">
+        <p className="mt-1 text-sm text-paper/60">
           {photo.location}
           {photo.date ? ` · ${photo.date}` : ""}
         </p>
@@ -30,15 +30,15 @@ export function PhotoMetadata({ photo }: { photo: Photo }) {
             {fields.map(([label, key]) =>
               photo[key] ? (
                 <div key={label} className="flex justify-between gap-4">
-                  <span className="text-[0.55rem] tracking-[0.2em] text-paper/40">{label}</span>
-                  <span className="text-[0.6rem] tracking-[0.1em] text-paper/80">{photo[key]}</span>
+                  <span className="text-xs tracking-[0.1em] text-paper/60">{label}</span>
+                  <span className="text-sm text-paper/80">{photo[key]}</span>
                 </div>
               ) : null
             )}
           </div>
         ) : (
-          <p className="mt-2 text-[0.55rem] italic tracking-[0.15em] text-paper/35">
-            [ADD EXIF IN data/photos.ts, OR IT LOADS AUTOMATICALLY WHEN SRC IS SET]
+          <p className="mt-2 text-sm text-paper/50">
+            Camera details are not available for this frame.
           </p>
         )}
       </div>
