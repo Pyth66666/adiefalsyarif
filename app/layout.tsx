@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { CustomCursor } from "@/components/navigation/CustomCursor";
 import { LenisProvider } from "@/components/shared/LenisProvider";
@@ -12,9 +12,17 @@ const geist = Geist({
   variable: "--font-sans",
 });
 
-const grotesk = Space_Grotesk({
+// Editorial headlines (Instrument Serif), clean body (Geist), technical labels (Geist Mono).
+const serif = Instrument_Serif({
   subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
   variable: "--font-display",
+});
+
+const mono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
@@ -34,7 +42,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${grotesk.variable}`}>
+    <html lang="en" className={`${geist.variable} ${serif.variable} ${mono.variable}`}>
       <body className="bg-ink font-sans text-paper">
         <ThemeProvider><LenisProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>

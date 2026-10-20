@@ -4,10 +4,10 @@ import { TextReveal } from "@/components/shared/TextReveal";
 import { useCms } from "@/components/cms/CmsGate";
 
 const verbs = [
-  { word: "BUILDING", desc: "products & systems with intent" },
-  { word: "LEARNING", desc: "security, CS & the craft of making" },
-  { word: "EXPLORING", desc: "CTFs, networks, and edge cases" },
-  { word: "CREATING", desc: "images, communities & memories" },
+  { word: "BUILDING", desc: "web prototypes and local tools" },
+  { word: "LEARNING", desc: "Computer Science at UTM Kuala Lumpur" },
+  { word: "EXPLORING", desc: "CTFs, AI agents & digital forensics" },
+  { word: "CREATING", desc: "photography, talks & community events" },
 ];
 
 /**
@@ -29,7 +29,7 @@ export function About() {
         {site.fullName}
       </TextReveal>
       <TextReveal as="p" delay={0.12} className="mt-4 text-[0.6rem] tracking-[0.35em] text-paper/50 md:text-xs">
-        COMPUTER SCIENCE STUDENT
+        COMPUTER SCIENCE STUDENT / COMMUNITY LEADER
       </TextReveal>
 
       <div className="mt-12 max-w-3xl">

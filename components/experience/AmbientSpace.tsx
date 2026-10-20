@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { PlanetJourney } from "./PlanetJourney";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useExperienceTheme } from "./ThemeProvider";
+import { isWebGLSupported } from "@/lib/webgl";
+
+const HeroPlanet = dynamic(() => import("@/components/three/HeroPlanet"), { ssr: false });
 import { MarsScene } from "./MarsScene";
 
 /** One subtle 2D star field for the whole reading journey; no extra WebGL scene. */
 export function AmbientSpace({ journey = false }: { journey?: boolean }) {
   const { theme } = useExperienceTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [webgl, setWebgl] = useState(false);
+  useEffect(() => { setWebgl(isWebGLSupported()); }, []);
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
@@ -58,6 +63,7 @@ export function AmbientSpace({ journey = false }: { journey?: boolean }) {
     document.addEventListener("visibilitychange", resume); reduced.addEventListener("change", resume);
     return () => { cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("scroll",onScroll);document.removeEventListener("visibilitychange", resume); reduced.removeEventListener("change", resume); };
   }, [theme]);
-  if(theme === "mars") return <div className="ambient-space ambient-mars" aria-hidden="true"><MarsScene subtle/>{journey && <PlanetJourney/>}<div className="ambient-vignette"/></div>;
-  return <div className="ambient-space" aria-hidden="true"><div className="ambient-nebula" /><canvas ref={canvasRef} />{journey && <PlanetJourney />}<div className="ambient-vignette" /></div>;
+  // Mars theme already has its own terrain scene, so the planet journey appears in the other themes.
+  if(theme === "mars") return <div className="ambient-space ambient-mars" aria-hidden="true"><MarsScene subtle/><div className="ambient-vignette"/></div>;
+  return <div className="ambient-space" aria-hidden="true"><div className="ambient-nebula" /><canvas ref={canvasRef} />{journey && webgl && <HeroPlanet />}<div className="ambient-vignette" /></div>;
 }

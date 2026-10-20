@@ -119,7 +119,7 @@ html.lenis body {
 .intro-screen h1 { text-shadow: 0 2px 32px #03071099; }
 .portfolio { --accent: #3ddc84; }
 .portfolio :is(section, footer, #build, #create) { scroll-margin-top: 5rem; }
-.eyebrow { font-family: var(--font-display); font-size: .75rem; letter-spacing: .18em; line-height: 1.6; }
+.eyebrow { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .16em; line-height: 1.6; }
 .portfolio-nav { position: fixed; inset: 0 0 auto; z-index: 900; display: flex; align-items: center; justify-content: space-between; height: 76px; padding: 0 3.5vw; background: rgba(10,10,10,.9); border-bottom: 1px solid #ffffff14; }
 .nav-wordmark { font: 600 2.3rem var(--font-display); letter-spacing: -.12em; }
 .nav-wordmark-dot { color: var(--build); }
@@ -383,3 +383,57 @@ html.lenis body {
   .mobile-menu-scroll { justify-content: flex-start; min-height: 0; overflow-y: auto; padding-bottom: max(24px, env(safe-area-inset-bottom)); }
   .intro-theme-picker .atmosphere-trigger { min-height: 44px; }
 }
+
+/* Real 3D planet journey: one full-viewport canvas behind the content, planets sit in the margins. */
+.planet-system { position:absolute; inset:0; opacity:0; transition:opacity 1.4s ease; }
+.planet-system.is-ready { opacity:.95; }
+.planet-system canvas { position:absolute; inset:0; width:100% !important; height:100% !important; }
+@media (max-width: 767px) { .planet-system.is-ready { opacity:.4; } }
+@media (prefers-reduced-motion: reduce) { .planet-system { transition:none; } }
+
+/* Splash wordmark rendered as liquid metal; sized to match the old ADIEF line. */
+.liquid-wordmark { display:block; width:min(72vw, 1100px); margin:0 auto; }
+@media (max-width: 767px) { .liquid-wordmark { width:82vw; } }
+
+/* Pocket Orbit cartridge switch */
+.cart-switch { display:flex; gap:8px; margin-top:28px; }
+.cart-switch button { padding:10px 14px; border:1px solid #9aabba55; font:10px monospace; letter-spacing:.12em; color:#9aabba; transition:border-color .2s,color .2s; }
+.cart-switch button[aria-pressed=true] { border-color:var(--theme-light); color:var(--theme-light); }
+.cart-switch button:hover { color:#d8dfeb; }
+
+/* ---------- Realistic world backdrops ---------- */
+/* CREATE: darkroom — film grain, a red safelight glow and a 35mm film edge down the margin. */
+.world-create { isolation:isolate; overflow-x:clip; }
+.world-create::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .92 0 0 0 0 .85 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+.world-create::after { content:""; position:absolute; top:0; bottom:0; left:0; width:26px; z-index:-1; pointer-events:none; opacity:.55;
+  /* Sprocket holes punched through the film base. */
+  background:
+    repeating-linear-gradient(180deg, transparent 0 7px, #050505 7px 17px, transparent 17px 28px) center/11px 100% no-repeat,
+    linear-gradient(90deg,#17120d,#211a12); }
+.world-create > section:first-child::before { content:""; position:absolute; top:-10%; right:-10%; width:70vw; height:70vh; pointer-events:none; z-index:-1;
+  background:radial-gradient(closest-side, rgba(200,45,35,.14), transparent 70%); }
+@media (max-width: 767px) { .world-create::after { display:none; } }
+
+/* ---------- Typography system ----------
+   Instrument Serif has a single weight, so never fake-bold it.
+   Small labels that used the display face switch to Geist Mono: serif reads badly at 10px with wide tracking. */
+html { font-synthesis-weight: none; }
+.font-display:is(.text-xs, .text-sm, [class*="text-[0."], [class*="text-[9px"], [class*="text-[10px"], [class*="text-[11px"]) { font-family: var(--font-mono); }
+.world-switch, .nav-wordmark { font-family: var(--font-mono); }
+.gateway-heading h1, .world-name, .world-intro h2, .project-row-title, .menu-link span:nth-child(2) { letter-spacing: -.015em; }
+.create-intro h2, .arcade-copy h1 em { font-family: var(--font-display); font-style: italic; }
+.arcade-copy h1 { letter-spacing: -.02em; }
+.arcade-instructions, .arcade-header, .arcade-footer, .cart-switch button { font-family: var(--font-mono); }
+
+/* Splash: real Milky Way photograph, moved only with transforms (cheap). */
+.milky-sky { position:absolute; inset:0; overflow:hidden; background:#020308; }
+.milky-sky-layer { position:absolute; inset:-3%; will-change:transform; }
+.milky-sky-layer img { width:100%; height:100%; object-fit:cover; animation:milky-drift 90s ease-in-out infinite alternate; }
+.milky-sky-shade { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 45%, transparent 30%, #02030899 100%), linear-gradient(180deg, #02030855, transparent 30%, transparent 70%, #020308aa); }
+@keyframes milky-drift { from { transform:scale(1.04) rotate(0deg); } to { transform:scale(1.1) rotate(1.5deg); } }
+@media (prefers-reduced-motion: reduce) { .milky-sky-layer img { animation:none; } }
+/* Instrument Serif is already narrow: undo the tight tracking that suited the old grotesk. */
+.font-display:is(.tracking-tight, .tracking-tighter, [class*="tracking-[-"]) { letter-spacing: 0; }
+.gateway-heading h1, .world-name, .world-intro h2, .project-row-title, .menu-link span:nth-child(2), .arcade-copy h1 { letter-spacing: 0; }

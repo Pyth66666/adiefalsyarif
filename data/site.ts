@@ -5,9 +5,9 @@ export const site = {
   domain: "adiefalsyarif.com",
   descriptors: "COMPUTER SCIENCE / CYBERSECURITY / PHOTOGRAPHY",
   intro:
-    "Computer Science student building things around technology, cybersecurity and communities.",
+    "Computer Science diploma student at UTM Kuala Lumpur. I lead HackDev MY and build projects across technology, cybersecurity and creative work.",
   about:
-    "I build things around technology, explore cybersecurity, create communities, and document the world through photography.",
+    "I study Computer Science at UTM Kuala Lumpur (CGPA 3.81) and lead HackDev MY, a community of more than 2,000 members. As National KD University Hubs Lead at KrackedDevs, I help connect university ambassadors and plan campus programmes. I build web demos, explore cybersecurity and AI, and create photography and video work.",
   // "prefers-reduced-motion" fallback: inject in layout
 };
 

@@ -148,7 +148,7 @@ function CommunityMetric({ m }: { m: Metric }) {
  */
 export function HackDev() {
   const { community, hackdev } = useCms();
-  const hackdevUrl = hackdev.websiteUrl || hackdev.discordUrl;
+  const hackdevUrl = hackdev.websiteUrl || hackdev.discordUrl || "https://hackdev.my";
   return (
     <section
       id="hackdev"
@@ -190,7 +190,7 @@ export function HackDev() {
         </div>
         {!hackdevUrl && (
           <p className="-mt-6 pb-8 text-center text-[0.6rem] tracking-[0.2em] text-paper/40">
-            [SET DISCORD / WEBSITE URL IN ADMIN → HACKDEV]
+            Community link coming soon.
           </p>
         )}
       </div>

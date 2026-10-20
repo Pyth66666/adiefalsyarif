@@ -1,28 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { TextReveal } from "@/components/shared/TextReveal";
 import { useCms } from "@/components/cms/CmsGate";
 import { ProjectModalView } from "./ProjectExplorer";
 
 const topics = [
-  { id: "security", label: "SECURITY", terms: ["security", "cyber", "ctf", "crypto"], description: "Security projects, challenges, and the decisions behind them.", x: 140, y: 85 },
-  { id: "web", label: "WEB", terms: ["web", "react", "next", "frontend", "fullstack", "full-stack"], description: "Interfaces and systems built for the web.", x: 400, y: 85 },
-  { id: "ai", label: "AI", terms: ["ai", "machine learning", "llm"], description: "Experiments that turn models and data into useful tools.", x: 430, y: 260 },
+  { id: "security", label: "SECURITY", terms: ["security", "cybersecurity", "cyber", "ctf", "ctfs", "crypto", "forensics", "osint", "hacking"], description: "Security projects, challenges, and the decisions behind them.", x: 140, y: 85 },
+  { id: "web", label: "WEB", terms: ["web", "react", "next", "frontend", "fullstack", "full-stack", "typescript"], description: "Interfaces and systems built for the web.", x: 400, y: 85 },
+  { id: "ai", label: "AI", terms: ["ai", "machine learning", "llm", "agents"], description: "Experiments that turn models and data into useful tools.", x: 430, y: 260 },
   { id: "engineering", label: "ENGINEERING", terms: ["engineering", "system", "network", "tool", "python", "iot"], description: "The systems, tools, and infrastructure behind the work.", x: 110, y: 260 },
 ];
 
 export function CyberMap() {
-  const { projects } = useCms();
-  const [selected, setSelected] = useState("security");
+  const { projects, events } = useCms();
   const [openId, setOpenId] = useState<string | null>(null);
   const reduced = useReducedMotion();
+  // Each thread collects matching projects plus matching timeline moments (talks, CTFs, events),
+  // so a discipline with no shipped project still shows the real work behind it.
+  const threads = useMemo(() => {
+    const matches = (text: string, terms: string[]) => {
+      const lower = text.toLowerCase(), words = lower.split(/[^a-z0-9-]+/);
+      return terms.some(term => term.includes(" ") ? lower.includes(term) : words.includes(term));
+    };
+    return Object.fromEntries(topics.map(t => [t.id, {
+      projects: projects.filter(p => matches([p.title, p.category, p.tagline ?? "", ...p.technologies].join(" "), t.terms)),
+      moments: events.filter(e => matches([e.name, e.org, e.story ?? ""].join(" "), t.terms)),
+    }]));
+  }, [projects, events]);
+  const firstWithWork = topics.find(t => threads[t.id].projects.length + threads[t.id].moments.length > 0)?.id ?? "security";
+  const [picked, setSelected] = useState<string | null>(null);
+  const selected = picked ?? firstWithWork;
   const topic = topics.find(t => t.id === selected)!;
-  const related = projects.filter(p => {
-    const words = [p.title, p.category, ...p.technologies].join(" ").toLowerCase().split(/[^a-z0-9-]+/);
-    return topic.terms.some(term => term.includes(" ") ? words.join(" ").includes(term) : words.includes(term));
-  });
+  const related = threads[selected].projects;
+  const moments = threads[selected].moments;
+  const total = related.length + moments.length;
   const opened = projects.find(p => p.id === openId);
 
   return <section id="cybermap" className="mx-auto max-w-7xl px-6 py-24 md:px-10" aria-label="Explore work by discipline">
@@ -42,15 +55,20 @@ export function CyberMap() {
       </svg>
       <div>
         <div className="cyber-topics" role="group" aria-label="Disciplines">
-          {topics.map(t => <button key={t.id} aria-pressed={selected === t.id} onClick={() => setSelected(t.id)}>{t.label}</button>)}
+          {topics.map(t => <button key={t.id} aria-pressed={selected === t.id} onClick={() => setSelected(t.id)}>{t.label} <span className="opacity-50">{threads[t.id].projects.length + threads[t.id].moments.length}</span></button>)}
         </div>
         <motion.div key={selected} initial={{ opacity: 0, y: reduced ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .2 }}>
           <h3 className="font-display text-2xl">{topic.label}</h3>
           <p className="mt-3 text-paper/60 leading-relaxed">{topic.description}</p>
-          <p className="eyebrow mt-6 text-build">{related.length} RELATED {related.length === 1 ? "PROJECT" : "PROJECTS"}</p>
-          {related.length ? <div className="mt-4">{related.map(p => <button key={p.id} className="w-full border-t border-white/15 py-4 text-left flex justify-between gap-4" onClick={() => setOpenId(p.id)} aria-haspopup="dialog">
-            <span>{p.title}</span><span className="text-build">↗</span>
-          </button>)}</div> : <p className="mt-4 text-sm text-paper/50">No published projects in this thread yet. Explore another discipline.</p>}
+          <p className="eyebrow mt-6 text-build">{total} {total === 1 ? "ITEM" : "ITEMS"} IN THIS THREAD</p>
+          {total ? <div className="mt-4">
+            {related.map(p => <button key={p.id} className="w-full border-t border-white/15 py-4 text-left flex justify-between gap-4" onClick={() => setOpenId(p.id)} aria-haspopup="dialog">
+              <span>{p.title}<span className="ml-3 text-[0.6rem] tracking-[0.2em] text-paper/40">PROJECT</span></span><span className="text-build">↗</span>
+            </button>)}
+            {moments.map(e => <button key={e.id} className="w-full border-t border-white/15 py-4 text-left flex justify-between gap-4" onClick={() => document.getElementById("timeline")?.scrollIntoView({ behavior: reduced ? "instant" : "smooth", block: "start" })}>
+              <span>{e.name}<span className="ml-3 text-[0.6rem] tracking-[0.2em] text-paper/40">{e.year}</span></span><span className="text-build">↓</span>
+            </button>)}
+          </div> : <p className="mt-4 text-sm text-paper/50">Nothing published in this thread yet. Explore another discipline.</p>}
         </motion.div>
       </div>
     </div>

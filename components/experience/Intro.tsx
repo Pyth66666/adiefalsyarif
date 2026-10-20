@@ -8,6 +8,8 @@ import { useCms } from "@/components/cms/CmsGate";
 import { StarfieldBackground, type SpacePointer } from "./StarfieldBackground";
 import { ThemePicker, useExperienceTheme } from "./ThemeProvider";
 import { MarsScene } from "./MarsScene";
+import { MilkyWaySky } from "./MilkyWaySky";
+import { LiquidWordmark } from "./LiquidWordmark";
 
 interface IntroProps {
   onEnter: () => void;
@@ -53,16 +55,14 @@ export function Intro({ onEnter }: IntroProps) {
       onPointerUp={e => { if (e.pointerType !== "mouse") pointer.current.active = false; }}
       className="intro-screen intro-with-themes fixed inset-0 z-[1200] isolate flex min-h-screen flex-col items-center justify-center overflow-hidden bg-ink px-6 text-center"
       exit={{ opacity: 0, scale: 1.03, filter: "blur(8px)" }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
     >
-      {theme === "mars" ? <MarsScene/> : <StarfieldBackground pointer={pointer} />}
+      {theme === "mars" ? <MarsScene/> : theme === "space" ? <MilkyWaySky pointer={pointer} /> : <StarfieldBackground pointer={pointer} />}
       <h1
         className="relative z-10 font-display text-center text-[12vw] font-light leading-[0.95] text-paper md:text-[9vw]"
         style={{ letterSpacing: `${theme === "mars" ? .18 : tracking}em`, transition: "letter-spacing 0.4s ease" }}
       >
-        ADIEF
-        <br />
-        <span className="opacity-70">AL SYARIF</span>
+        <LiquidWordmark lines={["ADIEF", "AL SYARIF"]} />
       </h1>
 
       <motion.p

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { LoadingSequence } from "@/components/experience/Loading";
 import { Intro } from "@/components/experience/Intro";
 import { Gateway } from "@/components/experience/Gateway";
 import { MobileGateway } from "@/components/experience/MobileGateway";
@@ -21,15 +20,12 @@ import { Lab } from "@/components/experience/Lab";
 import { AmbientSpace } from "@/components/experience/AmbientSpace";
 
 export default function Home() {
-  const [loaded, setLoaded] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [returning, setReturning] = useState(false);
   const isTouch = useCompactExperience();
-  const finishLoading = useCallback(() => setLoaded(true), []);
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("from") === "arcade") {
-      setReturning(true); setLoaded(true); setShowIntro(false);
+      setShowIntro(false);
       window.history.replaceState(null, "", "/#lab");
     }
   }, []);
@@ -54,10 +50,9 @@ export default function Home() {
   return (
     <MotionConfig reducedMotion="user">
       <main id="top" className="portfolio-universe relative min-h-screen isolate">
-        {!returning && <LoadingSequence onDone={finishLoading} />}
         <CmsGate>
           <AnimatePresence>
-            {loaded && showIntro && <Intro key="intro" onEnter={() => {
+            {showIntro && <Intro key="intro" onEnter={() => {
               window.scrollTo({ top: 0, behavior: "instant" });
               setShowIntro(false);
             }} />}

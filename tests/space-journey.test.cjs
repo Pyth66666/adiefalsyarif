@@ -17,9 +17,10 @@ test('planet movement reverses with scroll and respects reduced motion',()=>{
   assert.equal(planetFrame(-200,800,800,true).y,.5);
   assert.equal(planetFrame(-200,800,800,true).scale,1);
 });
-test('planet backgrounds are enabled in both Mars and space atmospheres',()=>{
+test('one 3D Earth replaces the flat planet sprites outside the Mars theme',()=>{
   const source=read('components/experience/AmbientSpace.tsx');
-  assert.equal((source.match(/<PlanetJourney/g)||[]).length,2);
+  assert.equal((source.match(/<HeroPlanet/g)||[]).length,1);
+  assert.ok(!source.includes('<PlanetJourney'));
   assert.ok(!source.includes('NebulaJourney'));
 });
 test('Mars remains static real photography',()=>{

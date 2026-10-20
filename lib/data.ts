@@ -108,9 +108,9 @@ function toSocial(s: DbSocialLink): SocialLink {
 }
 
 export async function getPublicContent(): Promise<PublicContent> {
-  if (!isSupabaseConfigured()) return placeholderContent();
+  if (!isSupabaseConfigured()) return getLocalContent();
   const sb = getSupabasePublic();
-  if (!sb) return placeholderContent();
+  if (!sb) return getLocalContent();
 
   const [projectsRes, photosRes, eventsRes, collectionRes, hackdevRes, statsRes, socialsRes, settingsRes, profilesRes] =
     await Promise.all([
@@ -145,39 +145,39 @@ export async function getPublicContent(): Promise<PublicContent> {
       fullName: `${setting?.name || sitePlaceholders.name} ${setting?.family || sitePlaceholders.family}`,
       domain: setting?.domain || sitePlaceholders.domain,
       descriptors: setting?.descriptors || sitePlaceholders.descriptors,
-      intro: setting?.intro || sitePlaceholders.intro,
-      about: setting?.about || sitePlaceholders.about,
-      contactEmail: setting?.contact_email || profiles[0]?.email_public || "",
+      intro: setting?.intro && setting.intro !== "Computer Science student building things around technology, cybersecurity and communities." ? setting.intro : sitePlaceholders.intro,
+      about: setting?.about && setting.about !== "I build things around technology, explore cybersecurity, create communities, and document the world through photography." ? setting.about : sitePlaceholders.about,
+      contactEmail: setting?.contact_email || profiles[0]?.email_public || placeholderEmail,
     },
     profile: profiles[0] ?? null,
-    projects: projects.filter((p) => p.published).map(toProject),
+    projects: projects.length ? projects.filter((p) => p.published).map(toProject) : projectPlaceholders.map((p) => ({ ...p })),
     photos: photos.filter((p) => p.published).map(toPhoto),
-    events: events.filter((e) => e.published).map(toEvent),
-    collection: collectionItems.filter((c) => c.published).map(toCollection),
+    events: events.length ? events.filter((e) => e.published).map(toEvent) : eventPlaceholders.map((e) => ({ ...e })),
+    collection: collectionItems.length ? collectionItems.filter((c) => c.published).map(toCollection) : collectionPlaceholders.map((c) => ({ ...c })),
     hackdev: {
       name: hackdev?.name || "HACKDEV",
-      description: hackdev?.description || "",
-      members: hackdev?.members ?? 0,
+      description: hackdev?.description || "A student technology and cybersecurity community. As CEO, I help bring people together to learn, share and build.",
+      members: Math.max(hackdev?.members ?? 0, 2000),
       universities: hackdev?.universities ?? 0,
       events: hackdev?.events ?? 0,
       workshops: hackdev?.workshops ?? 0,
       discordUrl: hackdev?.discord_url ?? "",
-      websiteUrl: hackdev?.website_url ?? "",
+      websiteUrl: hackdev?.website_url || "https://hackdev.my",
       image: hackdev?.image ?? "",
       story: hackdev?.story ?? "",
     },
-    statistics: byOrder(stats).map(toMetric),
+    statistics: stats.length ? byOrder(stats).map(toMetric) : telemetryPlaceholders.map((m) => ({ ...m })),
     community: [
-      { id: "h-members", label: "MEMBERS", value: hackdev?.members ?? 1500, suffix: "+" },
-      { id: "h-universities", label: "UNIVERSITIES", value: hackdev?.universities ?? 0 },
-      { id: "h-events", label: "EVENTS", value: hackdev?.events ?? 0 },
-      { id: "h-workshops", label: "WORKSHOPS", value: hackdev?.workshops ?? 0 },
+      { id: "h-members", label: "MEMBERS", value: Math.max(hackdev?.members ?? 0, 2000), suffix: "+" },
+      ...(hackdev?.universities ? [{ id: "h-universities", label: "UNIVERSITIES", value: hackdev.universities }] : []),
+      { id: "h-events", label: "EVENTS", value: Math.max(hackdev?.events ?? 0, 5) },
+      ...(hackdev?.workshops ? [{ id: "h-workshops", label: "WORKSHOPS", value: hackdev.workshops }] : []),
     ],
-    socials: socials.filter((s) => s.visible && s.url).map(toSocial),
+    socials: socials.some((s) => s.visible && s.url) ? socials.filter((s) => s.visible && s.url).map(toSocial) : socialPlaceholders.filter((s) => s.url).map((s) => ({ ...s })),
   };
 }
 
-function placeholderContent(): PublicContent {
+export function getLocalContent(): PublicContent {
   return {
     site: { name: sitePlaceholders.name, family: sitePlaceholders.family, fullName: `${sitePlaceholders.name} ${sitePlaceholders.family}`, domain: sitePlaceholders.domain, descriptors: sitePlaceholders.descriptors, intro: sitePlaceholders.intro, about: sitePlaceholders.about, contactEmail: placeholderEmail },
     profile: null,
@@ -185,7 +185,7 @@ function placeholderContent(): PublicContent {
     photos: photoPlaceholders.map((p) => ({ ...p })),
     events: eventPlaceholders.map((e) => ({ ...e })),
     collection: collectionPlaceholders.map((c) => ({ ...c })),
-    hackdev: { name: "HACKDEV", description: "A community for people exploring technology and cybersecurity.", members: 1500, universities: 0, events: 0, workshops: 0, discordUrl: "", websiteUrl: "", image: "", story: "" },
+    hackdev: { name: "HACKDEV", description: "A student technology and cybersecurity community. As CEO, I help bring people together to learn, share and build.", members: 2000, universities: 0, events: 0, workshops: 0, discordUrl: "", websiteUrl: "https://hackdev.my", image: "", story: "" },
     statistics: telemetryPlaceholders.map((m) => ({ ...m })),
     community: communityPlaceholders.map((m) => ({ ...m })),
     socials: socialPlaceholders.map((s) => ({ ...s })),

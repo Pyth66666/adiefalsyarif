@@ -99,6 +99,11 @@ export function ContactFooter() {
         <p className="text-center text-[0.55rem] tracking-[0.3em] text-paper/30">
           ADIEF AL SYARIF — ADIEFALSYARIF.COM
         </p>
+        <p className="mt-2 text-center text-[0.5rem] tracking-[0.2em] text-paper/25">
+          Planet textures: NASA ·{" "}
+          <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noreferrer" className="underline underline-offset-2">Solar System Scope</a>{" "}
+          (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="underline underline-offset-2">CC BY 4.0</a>)
+        </p>
       </div>
     </footer>
   );

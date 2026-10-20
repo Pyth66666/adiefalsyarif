@@ -29,10 +29,10 @@ export function BuildWorld() {
         <TextReveal as="p" className="text-xs tracking-[0.4em] text-build/80">
           BUILD
         </TextReveal>
-        <TextReveal as="h1" delay={0.05} className="mt-3 font-display text-6xl tracking-[0.1em] md:text-[11vw]">
+        <TextReveal as="h1" delay={0.05} className="mt-3 font-display text-6xl leading-[1.08] tracking-[0.1em] md:text-[11vw]">
           BUILD
         </TextReveal>
-        <TextReveal as="p" delay={0.1} className="mt-2 text-[0.6rem] tracking-[0.35em] text-paper/50 md:text-xs">
+        <TextReveal as="p" delay={0.1} className="mt-4 text-[0.6rem] tracking-[0.35em] text-paper/50 md:text-xs">
           COMPUTER SCIENCE / CYBERSECURITY / ENGINEERING
         </TextReveal>
 

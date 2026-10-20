@@ -11,8 +11,8 @@ export function configuredLinks(links: SocialLink[]): SocialLink[] {
 
 export const socials: SocialLink[] = [
   // Tech links — only filled URLs are rendered.
-  { id: "github", label: "GitHub", url: "", group: "tech" },
-  { id: "linkedin", label: "LinkedIn", url: "", group: "tech" },
+  { id: "github", label: "GitHub", url: "https://github.com/Pyth66666", group: "tech" },
+  { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/adief-al-syarif-9315aa277", group: "tech" },
   { id: "ctftime", label: "CTFtime", url: "", group: "tech" },
   // Creative links
   { id: "instagram", label: "Instagram", url: "", group: "creative" },
@@ -20,5 +20,5 @@ export const socials: SocialLink[] = [
   { id: "printstore", label: "Print Store", url: "", group: "creative" },
 ];
 
-export const email = ""; // e.g. "hi@adiefalsyarif.com"
+export const email = "muhdadief07@gmail.com"; // Public address supplied by Adief.
 export const hackdevUrl = ""; // set the HackDev community destination here

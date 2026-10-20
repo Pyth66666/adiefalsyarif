@@ -77,3 +77,9 @@ visual foundation. The sections below them use the newer interactive designs.
 - Collection badges support actual drag rotation, flip buttons, and story dialogs.
 - Modal dialogs handle Escape and focus restoration; gallery and map controls support keyboard navigation.
 - No additional visual libraries were installed.
+
+## Portfolio structure
+
+The original loading sequence, ENTER screen, split BUILD / CREATE gateway, menu, section order, space themes, cursor, and arcade remain the homepage. Preserve this structure when improving the site.
+
+An alternative editorial design is retained only at /studio; its stylesheet and icon are isolated to that route. The original metadata and layout have been restored. The public contact email supplied by Adief remains configured in data/socials.ts.

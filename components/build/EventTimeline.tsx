@@ -130,11 +130,26 @@ function EventRow({ event }: { event: EventItem }) {
   );
 }
 
+
+const MONTHS = ["january","february","march","april","may","june","july","august","september","october","november","december"];
+/** Newest first. Understands ISO dates, "Month YYYY", "YYYY" and ranges like "2024–2025". */
+function eventSortKey(e: EventItem): number {
+  if (e.date && !Number.isNaN(Date.parse(e.date))) { const d = new Date(e.date); return d.getFullYear() * 12 + d.getMonth(); }
+  const text = `${e.year ?? ""}`.toLowerCase();
+  const years = text.match(/\d{4}/g);
+  if (!years) return -1;
+  const year = Number(years[years.length - 1]);
+  const month = MONTHS.findIndex(m => text.includes(m));
+  // A year without a month sits after that year's dated entries; a range counts by its end year.
+  return year * 12 + (month >= 0 ? month : -0.5);
+}
+
 /**
  * Mission log — a racing-calendar inspired timeline.
  */
 export function EventTimeline() {
-  const { events } = useCms();
+  const { events: unsorted } = useCms();
+  const events = [...unsorted].sort((a, b) => eventSortKey(b) - eventSortKey(a));
   return (
     <section
       id="timeline"
