@@ -1,0 +1,1338 @@
+/* Utility Hub — stylesheet.
+   Organised: tokens -> base -> layout (shell, sidebar) -> components
+   (button, field, dropzone, panel, status, tabs) -> tool-specific.
+   Every colour comes from a token in the :root blocks below; there are no
+   hard-coded hex values anywhere else in this file. See docs/DESIGN.md. */
+
+/* =========================================================================
+   1. TOKENS
+   ========================================================================= */
+
+:root {
+  /* colour — light (default) */
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface-2: #EFECE5;
+  --border: #D9D4CA;
+  --border-strong: #8E887C;
+  --text: #1D1B17;
+  --text-muted: #5E5A52;
+  --accent: #1B6B57;
+  --accent-hover: #14543F;
+  --on-accent: #FFFFFF;
+  --select-tint: #E3F0EB;
+  --danger: #A32A1F;
+  --ok: #1D6B3A;
+
+  /* type */
+  --font-display: Charter, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --fs-caption: 0.8125rem;
+  --fs-small: 0.875rem;
+  --fs-body: 1rem;
+  --fs-lead: 1.125rem;
+  --fs-h2: 1.25rem;
+  --fs-h1: clamp(1.625rem, 1.2rem + 1.6vw, 2rem);
+
+  /* space */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius: 10px;
+
+  /* elevation */
+  --shadow-pop: 0 4px 16px rgba(29, 27, 23, 0.14);
+
+  /* motion */
+  --dur: 120ms;
+
+  /* shell */
+  --sidebar-w: 260px;
+  --content-max: 760px;
+  --control-h: 40px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151512;
+    --surface: #1D1C18;
+    --surface-2: #26251F;
+    --border: #38362E;
+    --border-strong: #7C776B;
+    --text: #ECE9E1;
+    --text-muted: #A9A498;
+    --accent: #5CC4A6;
+    --accent-hover: #7DD6BC;
+    --on-accent: #0B1F18;
+    --select-tint: #1F3029;
+    --danger: #FF8A7A;
+    --ok: #6FCF97;
+    --shadow-pop: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* =========================================================================
+   2. BASE
+   ========================================================================= */
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { color-scheme: light dark; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  background: var(--bg);
+  color: var(--text);
+  font: var(--fs-body)/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 { font-weight: 600; }
+h1 { font-family: var(--font-display); font-size: var(--fs-h1); line-height: 1.2; letter-spacing: -0.01em; margin: 0; }
+/* The tool heading receives programmatic focus for screen readers; never draw a
+   ring on it. Keyboard-focus rings on real controls (:focus-visible) stay. */
+h1:focus { outline: none; }
+h2 { font-size: var(--fs-h2); line-height: 1.3; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ontint:focus-visible,
+.onselect:focus-visible { outline-color: var(--text); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: calc(-1 * var(--space-8));
+  z-index: 40;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-sm);
+  transition: top var(--dur) ease-out;
+}
+.skip-link:focus { top: var(--space-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   3. LAYOUT — shell, sidebar
+   ========================================================================= */
+
+.sidebar {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: var(--space-5) var(--space-4);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.app-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.sidebar-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* The label is visually hidden (see index.html); the search field is the only
+   visible element, so it sits directly under the app name block. */
+
+.input-wrap { position: relative; display: block; }
+.input-wrap .field-input { padding-right: var(--space-7); }
+.input-wrap .clear-search {
+  position: absolute;
+  right: var(--space-1);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+.tool-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Category groups inside the sidebar (and the home list). Each group is an
+   <li> holding an h3 heading and its own tool <ul>; empty groups are not
+   rendered, so the list never shows a heading with nothing under it. */
+.tool-group { list-style: none; }
+.tool-group + .tool-group { margin-top: var(--space-2); }
+.tool-group-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tool-group-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-muted);
+  margin: var(--space-5) 0 var(--space-2);
+  padding: 0 var(--space-4);
+}
+/* The first heading sits directly under the search field, so it keeps the
+   block gap only below it. */
+.tool-group:first-child > .tool-group-title { margin-top: 0; }
+
+.tool-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-left: 3px solid transparent;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: background var(--dur) ease-out;
+}
+.tool-row:hover { background: var(--surface-2); }
+.tool-row + .tool-row { border-top: 1px solid var(--border); }
+
+.tool-row-name {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.tool-row-desc {
+  display: block;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.tool-row.is-current {
+  border-left-color: var(--accent);
+  background: var(--select-tint);
+}
+.tool-row.is-current .tool-row-name { color: var(--text); }
+
+.tool-row.is-soon { cursor: default; color: var(--text-muted); }
+.tool-row.is-soon:hover { background: transparent; }
+.tool-row-soon { display: block; font-size: var(--fs-caption); color: var(--text-muted); }
+
+.sidebar-empty { padding: var(--space-4); color: var(--text-muted); }
+.sidebar-empty p { font-size: var(--fs-small); }
+.sidebar-empty .sidebar-empty-hint { font-size: var(--fs-caption); margin-top: var(--space-1); }
+
+.sidebar-caption {
+  margin-top: auto;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.net-bad { color: var(--danger); font-weight: 600; }
+
+.content {
+  grid-column: 2;
+  padding: var(--space-7) var(--space-7) var(--space-8);
+  min-width: 0;
+}
+#main { max-width: var(--content-max); }
+.view { display: block; }
+.view[hidden] { display: none; }
+
+.narrow-nav { margin-bottom: var(--space-4); }
+
+.tool-head { margin-bottom: var(--space-5); }
+.tool-head h1 { margin: 0; }
+.tool-lead { margin-top: var(--space-1); font-size: var(--fs-lead); line-height: 1.5; color: var(--text-muted); }
+
+/* Vertical rhythm. `.stack` is the one reusable class for any container that
+   holds multiple blocks: tool root, each tab panel, any wrapping container.
+   Tools wrap their blocks in inner containers, so a gap on .tool-mount alone
+   cannot reach them — every such container carries .stack (or .stack-sm for
+   tight groups). No block relies on margin collapsing. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+.stack > * { margin: 0; }
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.stack-sm > * { margin: 0; }
+/* Horizontal control group: buttons and inline fields. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: 0;
+}
+.row > * { margin: 0; }
+
+.tool-mount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.tool-mount > * { margin: 0; }
+/* Tool roots are stacks themselves; keep the same rhythm inside. */
+.tool-mount > .stack { gap: var(--space-5); }
+
+/* Home view: a short prompt and the tools as a plain readable list.
+   The sidebar already lists every tool (on desktop and, when home, on narrow
+   screens too), so the content-column list and its prompt are hidden where
+   they would duplicate it. All three lines exist for every viewport. */
+.home-prompt { font-size: var(--fs-lead); line-height: 1.5; color: var(--text-muted); }
+.home-line-list { display: none; }
+.home-line-narrow { display: none; }
+.home-tools {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: none;
+  flex-direction: column;
+}
+/* The home list uses the same groups as the sidebar; headings align with the
+   rows (no left padding) since it lives in the content column. */
+.home-tools .tool-group-title { padding: 0; }
+.home-tools .tool-group:first-child > .tool-group-title { margin-top: 0; }
+
+@media (max-width: 899px) {
+  body { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    grid-column: 1; grid-row: auto;
+    position: static;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: var(--space-5) var(--space-4);
+  }
+  .sidebar-caption { margin-top: var(--space-5); }
+  .content { grid-column: 1; padding: var(--space-6) var(--space-5) var(--space-7); }
+  .sidebar-search { display: none; }
+  .sidebar .tool-list { display: none; }
+  .sidebar-caption { display: none; }
+  .sidebar.is-home .sidebar-search,
+  .sidebar.is-home .tool-list,
+  .sidebar.is-home .sidebar-caption { display: flex; }
+  .sidebar.is-home .tool-list { margin-top: var(--space-4); }
+
+  /* On narrow screens the sidebar block already shows the name and the tools,
+     so the home view drops its duplicate heading and list. */
+  .home-hide-narrow { display: none !important; }
+  .home-line-list { display: none; }
+  .home-line-wide { display: none; }
+  .home-line-narrow { display: inline; }
+  .home-tools { display: none; }
+}
+
+@media (max-width: 599px) {
+  .content { padding: var(--space-5) var(--space-4) var(--space-6); }
+  .sidebar { padding: var(--space-4); }
+}
+
+/* =========================================================================
+   4. COMPONENTS
+   ========================================================================= */
+
+/* ---- 4.1 Buttons ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding: 0 var(--space-5);
+  font: var(--fs-small)/1 var(--font-ui);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--dur) ease-out, border-color var(--dur) ease-out, color var(--dur) ease-out;
+}
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+/* Disabled primary keeps the primary shape but is visibly inert in both
+   themes: --surface-2 fill, --text-muted text, no hover. */
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.btn-secondary { border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-2); }
+
+.btn-text {
+  height: auto;
+  padding: var(--space-1) 0;
+  min-height: 44px;
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+.btn-text:hover { text-decoration: underline; }
+.btn-text:disabled { color: var(--text-muted); cursor: default; text-decoration: none; }
+.btn-danger { color: var(--danger); }
+.btn-ondark:focus-visible { outline-color: var(--text); }
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--dur) ease-out, color var(--dur) ease-out;
+}
+.btn-icon svg { width: 16px; height: 16px; }
+.btn-icon:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+.btn-icon:disabled { color: var(--border-strong); cursor: default; }
+
+/* ---- 4.2 Fields ---- */
+
+/* A field is always a vertical stack: label first (14px/500, --text),
+   then the control, 8px apart. `column-reverse` and floats are never used,
+   so the label can never fall below or beside the control. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.field-label { font-size: var(--fs-small); font-weight: 500; color: var(--text); }
+.field-hint { font-size: var(--fs-caption); color: var(--text-muted); }
+
+.field-input,
+.field-select,
+.field-textarea,
+input[type="text"].field-input,
+input[type="number"].field-input,
+input[type="search"].field-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  font: var(--fs-body)/1.4 var(--font-ui);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  transition: border-color var(--dur) ease-out;
+}
+.field-input:hover,
+.field-select:hover,
+.field-textarea:hover { border-color: var(--text-muted); }
+
+.field-textarea {
+  height: auto;
+  min-height: 140px;
+  padding: var(--space-3);
+  resize: vertical;
+  line-height: 1.5;
+}
+.field-textarea.is-mono { font-family: var(--font-mono); }
+/* The read-only Output block sits on --surface-2 with the mono font. */
+.field-textarea.output-block {
+  min-height: 160px;
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+}
+
+/* Range sliders: one token-driven accent in both themes. */
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* Native select arrow: keep the system UI colour in sync with the theme. */
+.field-select {
+  color-scheme: light dark;
+  cursor: pointer;
+}
+
+/* Colour pickers draw their own swatch on --surface; the browser chrome
+   (border, background) comes from tokens so dark mode stays flat. */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+input[type="color"]::-webkit-color-swatch { border: 0; border-radius: calc(var(--radius-sm) - 2px); }
+input[type="color"]::-moz-color-swatch { border: 0; border-radius: calc(var(--radius-sm) - 2px); }
+
+.check-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font-size: var(--fs-small);
+}
+.check-row input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.search-input {
+  width: 100%;
+  font: var(--fs-body)/1.4 var(--font-ui);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+}
+
+/* ---- 4.3 Drop zone ---- */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 200px;
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  cursor: pointer;
+  background: var(--surface-2);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  transition: border-color var(--dur) ease-out, background var(--dur) ease-out;
+}
+.dropzone:hover { border-color: var(--text-muted); }
+.dropzone.is-dragover {
+  border: 2px solid var(--accent);
+  background: var(--select-tint);
+}
+.dropzone-icon { width: 28px; height: 28px; color: var(--text-muted); margin-bottom: var(--space-2); }
+.dropzone-title { font-size: var(--fs-body); font-weight: 500; }
+.dropzone-hint { font-size: var(--fs-small); color: var(--text-muted); }
+.dropzone-browse { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.dropzone-meta { font-size: var(--fs-caption); color: var(--text-muted); margin-top: var(--space-1); }
+.dropzone-input { display: none; }
+
+.dropzone.is-compact {
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: 0 var(--space-4);
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.dropzone.is-compact .dropzone-icon { display: none; }
+.dropzone.is-compact .dropzone-hint { display: none; }
+.dropzone.is-compact .dropzone-title { font-weight: 500; }
+.dropzone.is-compact .dropzone-meta { margin: 0; font-size: var(--fs-small); color: var(--text); }
+.compact-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-left: auto; }
+/* Replace / Add more / Clear read as a text-link row: 8px apart and each one
+   has a visible focus ring (the shared :focus-visible rule, offset tightened
+   so the ring is never clipped inside the compact bar). */
+.compact-actions .btn-text:focus-visible { outline-offset: 2px; }
+
+/* ---- 4.4 Panel ---- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+.panel-title { font-size: var(--fs-h2); font-weight: 600; margin-bottom: var(--space-4); }
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4) var(--space-5);
+}
+@media (min-width: 600px) {
+  .field-grid { grid-template-columns: 1fr 1fr; }
+}
+.field-grid .field-span { grid-column: 1 / -1; }
+
+/* ---- 4.5 Status / error / warning ---- */
+
+.status {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  min-height: 1.4em;
+}
+.status.is-ok { color: var(--ok); }
+.status.is-bad { color: var(--danger); font-weight: 500; }
+.status.is-warn { color: var(--text); }
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.status-row .status { margin-left: auto; }
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+.block-lead { font-weight: 600; }
+.block-error { border-color: var(--danger); }
+.block-error .block-lead { color: var(--danger); }
+.block-warning { border-color: var(--border-strong); }
+.block-warning .block-lead { color: var(--text); }
+.block-detail { font-size: var(--fs-small); color: var(--text-muted); }
+
+.progress {
+  height: 2px;
+  width: 100%;
+  background: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.progress-bar { height: 100%; background: var(--accent); transition: width var(--dur) ease-out; }
+
+/* ---- 4.6 Tabs (text tabs with accent underline) ---- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  font: var(--fs-small)/1 var(--font-ui);
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-3) 0;
+  min-height: 44px;
+  cursor: pointer;
+  transition: color var(--dur) ease-out, border-color var(--dur) ease-out;
+}
+.tab:hover { color: var(--text); }
+.tab.is-active,
+.tab[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+.tab:focus-visible { outline-offset: -2px; }
+
+/* Touch targets: tab labels reach the 44px minimum at <= 600px. */
+@media (max-width: 600px) {
+  .tab {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+}
+
+/* ---- 4.7 Result lists ---- */
+
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.result + .result { margin-top: var(--space-2); }
+.result-name { font-size: var(--fs-small); word-break: break-all; }
+
+.file-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.file-name { font-size: var(--fs-small); font-weight: 500; word-break: break-all; }
+.file-meta { margin-left: auto; font-size: var(--fs-caption); color: var(--text-muted); white-space: nowrap; }
+.file-actions { display: flex; gap: var(--space-1); flex: none; }
+
+/* =========================================================================
+   5. TOOL-SPECIFIC
+   ========================================================================= */
+
+/* ---- 5.1 PDF ---- */
+
+.thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--space-4);
+}
+@media (max-width: 599px) { .thumb-grid { gap: var(--space-3); } }
+
+/* ---- 5.2 Image ---- */
+
+.image-thumb {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+/* ---- 5.3 Text ---- */
+
+.output-block {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  background: var(--surface-2);
+}
+
+/* ---- 5.4 QR ---- */
+
+.qr-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 320px;
+  padding: var(--space-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+.qr-canvas {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  image-rendering: pixelated;
+}
+.qr-preview-wrap { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.qr-preview-meta { font-size: var(--fs-caption); color: var(--text-muted); }
+.qr-empty { font-size: var(--fs-small); color: var(--text-muted); text-align: center; }
+.qr-error { font-size: var(--fs-small); font-weight: 500; color: var(--danger); text-align: center; }
+.qr-range-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.qr-range-out { font-size: var(--fs-small); font-weight: 600; color: var(--text); }
+
+/* Dark / Light colour fields sit side by side in one row, each an equal
+   40x40 swatch with its text value next to it. */
+.qr-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+.qr-color-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.qr-color-row input[type="color"] {
+  width: 40px;
+  height: 40px;
+  flex: none;
+}
+.qr-color-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+/* >= 900px: two independent column stacks — left column is the tab row +
+   description, the input (preset fields) and the Options panel; right column is
+   the live preview and a wrapping row of Download PNG / Download SVG / Copy SVG.
+   The two columns flow on their own, so a tall left column never leaves a gap
+   under the textarea. Below 900px `.qr-grid` is a plain `.stack` and the source
+   order (tabs+description, input, options, preview, buttons) stacks. */
+@media (min-width: 900px) {
+  .stack.qr-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+    gap: var(--space-5) var(--space-6);
+    align-items: start;
+  }
+  .qr-col-preview { position: sticky; top: var(--space-5); }
+  /* Keep the three download actions as one group, never a lone button on a
+     second line unless the viewport is narrow. */
+  .qr-col-preview > .status-row { gap: var(--space-3); }
+  .qr-preview { max-width: none; }
+}
+/* ---- 5.5 PDF page picker ---- */
+
+.pdf-picker { min-width: 0; }
+
+/* Sticky toolbar at the top of the grid. */
+.pdf-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.pdf-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+.pdf-summary { font-size: var(--fs-small); color: var(--text-muted); }
+.pdf-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+.pdf-rotate-group { display: inline-flex; gap: var(--space-2); }
+.pdf-split-row { align-items: flex-end; gap: var(--space-3); }
+.pdf-split-row .field-input { width: 88px; }
+
+/* Grid + tiles. */
+.pdf-grid-wrap { min-width: 0; }
+.pdf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.tile-canvas {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.tile-canvas .tile-thumb {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: center center;
+}
+.tile-canvas .tile-thumb[data-rotated="1"] {
+  /* Rotated 90/270: scale up so the swapped dimensions still fill the box. */
+  max-width: none;
+  max-height: none;
+  width: auto;
+  height: auto;
+}
+.tile-num { font-size: var(--fs-caption); color: var(--text-muted); line-height: 1.4; }
+.tile-name {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tile-unavailable { font-size: var(--fs-caption); color: var(--text-muted); text-align: center; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
+
+/* Selected: tint + accent outline + check badge (never colour alone). */
+.tile.is-selected .tile-canvas {
+  background: var(--select-tint);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tile-check {
+  position: absolute;
+  top: var(--space-1);
+  left: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.tile-check svg { width: 14px; height: 14px; }
+.tile:hover .tile-canvas { border-color: var(--text-muted); }
+.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Dragging: dragged tile 0.6 opacity, 3px accent insertion bar on the side. */
+.tile.is-dragging { opacity: 0.6; }
+.tile.drop-before::before,
+.tile.drop-after::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.tile.drop-before::before { left: calc(-1 * var(--space-2) - 1px); }
+.tile.drop-after::after { right: calc(-1 * var(--space-2) - 1px); }
+
+/* Floating bar shown when the toolbar scrolls out of view. */
+.pdf-floating {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  max-width: calc(100vw - var(--space-5) * 2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+
+.status.has-undo { display: inline-flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  .pdf-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: var(--space-3); }
+  .pdf-toolbar-actions { margin-left: 0; }
+  .tile { min-height: 44px; }
+}
+
+/* ---- 5.6 Images to PDF / PDF to images ---- */
+
+.imgpdf-tool { min-width: 0; }
+
+/* Reorderable image list (Images -> PDF). One row per image: drag handle,
+   thumbnail, name/size, and move-up / move-down / remove controls. */
+.imgpdf-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.imgpdf-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+}
+.imgpdf-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.imgpdf-item.is-dragging { opacity: 0.6; }
+.imgpdf-item.drop-before::before,
+.imgpdf-item.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.imgpdf-item.drop-before::before { top: calc(-1 * var(--space-1) - 1px); }
+.imgpdf-item.drop-after::after { bottom: calc(-1 * var(--space-1) - 1px); }
+.imgpdf-handle { display: inline-flex; color: var(--text-muted); cursor: grab; }
+.imgpdf-thumb {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.imgpdf-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.imgpdf-name {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Page chips (PDF -> images): the page count shows immediately while the real
+   rendering happens only on export. */
+.imgpdf-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.imgpdf-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Errors reuse the shared error block; the container only stacks them. */
+.imgpdf-errors { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* Determinate progress line under the options panel (never a spinner). */
+.imgpdf-progress {
+  height: 2px;
+  width: 100%;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.imgpdf-progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width var(--dur) ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .imgpdf-progress-bar { transition: none; }
+}
+
+/* ---- 5.7 Page numbers and visual signatures ---- */
+.signpdf-tool { min-width: 0; }
+.signpdf-ink {
+  display: block;
+  width: 100%;
+  height: 180px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  touch-action: none;
+  cursor: crosshair;
+}
+.signpdf-signature-preview {
+  min-height: 64px;
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.signpdf-signature-preview img { display: block; max-width: 100%; max-height: 80px; }
+.signpdf-frame {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  overflow: visible;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+}
+.signpdf-page { display: block; width: 100% !important; height: auto !important; cursor: crosshair; }
+.signpdf-overlay {
+  position: absolute;
+  border: 2px solid var(--accent);
+  cursor: move;
+  touch-action: none;
+}
+.signpdf-placed { width: 100%; height: 100%; display: block; pointer-events: none; }
+.signpdf-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border: 2px solid var(--on-accent);
+  cursor: nwse-resize;
+}
+
+/* ---- 5.8 Redact / blur ---- */
+.redact-frame {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.redact-preview { display: block; max-width: 100%; height: auto; }
+.redact-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* ---- 5.9 Scanner (camera to PDF) ---- */
+
+.scanner-tool { min-width: 0; }
+
+.scanner-video {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+.scanner-capture { display: flex; flex-direction: column; gap: var(--space-4); }
+.scanner-capture > .dropzone { min-height: 140px; }
+
+/* The adjust stage: the original photo (with the four draggable corner handles
+   layered on top) beside a live preview of the flattened, filtered result. */
+.scanner-stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+.scanner-frame {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 560px;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  touch-action: none;
+}
+/* width:100% + height:auto keeps the canvas box EXACTLY the photo's aspect, so
+   the overlay (inset: 0) lines up with the pixels under it. */
+.scanner-preview { display: block; width: 100%; height: auto; }
+.scanner-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  width: 200px;
+}
+.scanner-result-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.scanner-quad {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.scanner-quad polygon {
+  fill: color-mix(in srgb, var(--accent) 14%, transparent);
+  stroke: var(--accent);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.scanner-handle {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  box-shadow: var(--shadow-pop);
+  cursor: grab;
+  touch-action: none;
+}
+.scanner-handle:active { cursor: grabbing; }
+.scanner-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Review list: one row per scanned page, matching the reorderable image list. */
+.scanner-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.scanner-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+}
+.scanner-item.is-dragging { opacity: 0.6; }
+.scanner-item.drop-before::before,
+.scanner-item.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.scanner-item.drop-before::before { top: calc(-1 * var(--space-1) - 1px); }
+.scanner-item.drop-after::after { bottom: calc(-1 * var(--space-1) - 1px); }
+.scanner-thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.scanner-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.scanner-name { font-size: var(--fs-small); font-weight: 500; color: var(--text); }
+.scanner-errors { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* ---- 5.10 Certificate generator ---- */
+.certificates-tool { min-width: 0; }
+.certificates-tool textarea.field-input { width: 100%; min-height: 120px; height: auto; padding: var(--space-3); }
+.certificates-frame {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.certificates-preview { display: block; max-width: 100%; height: auto; cursor: crosshair; }
+.certificates-marker {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--accent);
+  background: var(--select-tint);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}

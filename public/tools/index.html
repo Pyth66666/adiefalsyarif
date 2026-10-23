@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Utility Hub</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <aside class="sidebar is-home" aria-label="Tools">
+    <p class="app-name">Utility Hub</p>
+
+    <div class="sidebar-search">
+      <label class="visually-hidden" for="tool-search">Search tools</label>
+      <span class="input-wrap">
+        <input
+          id="tool-search"
+          class="search-input"
+          type="search"
+          placeholder="Search tools"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="search-clear" class="btn-text btn-icon clear-search" type="button" hidden aria-label="Clear search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+          </svg>
+        </button>
+      </span>
+      <p id="search-count" class="visually-hidden" aria-live="polite"></p>
+    </div>
+
+    <nav aria-label="Tool list">
+      <ul id="tool-list" class="tool-list"></ul>
+    </nav>
+    <p id="empty-state" class="sidebar-empty" hidden>
+      <span id="empty-message">No tools match that search.</span>
+      <span class="sidebar-empty-hint">Try a different word.</span>
+    </p>
+
+    <p class="sidebar-caption">
+      Runs in your browser. Files never leave this device.
+      <span id="network-watch"></span>
+    </p>
+  </aside>
+
+  <div class="content">
+    <main id="main">
+      <!-- Home view -->
+      <section id="home-view" class="view" aria-labelledby="home-title">
+        <div class="tool-head home-hide-narrow">
+          <h1 id="home-title">Utility Hub</h1>
+          <p class="tool-lead">Small, honest tools. Everything runs on this device.</p>
+        </div>
+        <p class="home-prompt">
+          <span class="home-line-list">Choose a tool to begin.</span>
+          <span class="home-line-wide">Choose a tool from the list on the left.</span>
+          <span class="home-line-narrow">Choose a tool above.</span>
+        </p>
+        <ul id="home-group-list" class="home-tools" aria-label="Tools"></ul>
+      </section>
+
+      <!-- Active tool view -->
+      <section id="tool-view" class="view" hidden aria-labelledby="tool-title">
+        <div class="narrow-nav">
+          <button id="back-btn" class="btn btn-text" type="button" hidden>&larr; All tools</button>
+        </div>
+        <div class="tool-head">
+          <h1 id="tool-title" tabindex="-1"></h1>
+          <p id="tool-desc" class="tool-lead"></p>
+        </div>
+        <div id="tool-mount" class="tool-mount"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Shared drop / file-picker surface, reused by every tool -->
+  <template id="dropzone-template">
+    <div class="dropzone" tabindex="0" role="button" aria-label="Choose files or drop them here">
+      <input type="file" class="dropzone-input" hidden />
+      <svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 16V4m0 0L8 8m4-4 4 4" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke-linecap="round" />
+      </svg>
+      <p class="dropzone-title">Drop a file here</p>
+      <p class="dropzone-hint">or <span class="dropzone-browse">choose from your device</span></p>
+      <p class="dropzone-meta"></p>
+    </div>
+  </template>
+
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>
